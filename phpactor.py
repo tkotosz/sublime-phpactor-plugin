@@ -202,11 +202,10 @@ class PhpactorSublimeFileReferencesCommand(sublime_plugin.TextCommand):
 
     def open_file(self, index):
         if index == -1:
-            #self.close_preview()
+            self.close_preview()
             return
 
         self.sublime_api.open_file(self.view, os.path.dirname(self.files[index][1]) + "/" + self.files[index][0]);
-        #self.view.window().open_file(os.path.dirname(self.files[index][1]) + "/" + self.files[index][0], sublime.ENCODED_POSITION)
 
     def close_preview(self):
         if not self.preview:
