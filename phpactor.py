@@ -14,8 +14,10 @@ class SublimeApi:
     def apply_rpc_action(self, view, action_name, parameters):
         if action_name == 'collection':
             for action in parameters['actions']:
+                self.log('applying editor action', action['name'])
                 view.run_command('phpactor_sublime_' + action['name'], action['parameters'])
         else:
+            self.log('applying editor action', action_name)
             view.run_command('phpactor_sublime_' + action_name, parameters)
 
     def insert_to_current_positions(self, view, edit, text):
@@ -270,6 +272,22 @@ class PhpactorGenerateAccessorsCommand(sublime_plugin.TextCommand):
     def run(self, edit, names=None):
         request = {
             'action': 'generate_accessor',
+            'parameters': {
+                'source': self.sublime_api.get_current_file_content(self.view),
+                'path': self.sublime_api.get_current_file_path(self.view),
+                'offset': self.sublime_api.get_current_position(self.view)
+            }
+        }
+        self.view.run_command('phpactor_rpc_call', request)
+
+class PhpactorGenerateMethodCommand(sublime_plugin.TextCommand):
+    def __init__(self, view):
+        super().__init__(view)
+        self.sublime_api = SublimeApi()
+
+    def run(self, edit, names=None):
+        request = {
+            'action': 'generate_method',
             'parameters': {
                 'source': self.sublime_api.get_current_file_content(self.view),
                 'path': self.sublime_api.get_current_file_path(self.view),
