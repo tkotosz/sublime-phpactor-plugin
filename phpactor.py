@@ -166,6 +166,10 @@ class Phpactor:
     def send_rpc_request(self, request):
         return self.rpc_client.send(request)
 
+#################################################
+# Public Commands [SUBLIME-PHPACTOR] -> Phpactor
+#################################################
+
 class PhpactorEchoCommand(sublime_plugin.TextCommand):
     def __init__(self, view):
         super().__init__(view)
@@ -233,6 +237,32 @@ class PhpactorGotoDefinitionCommand(sublime_plugin.TextCommand):
         self.sublime_api.log_rpc_received(response)
 
         self.sublime_api.apply_rpc_action(self.view, response.action, response.parameters)
+
+class PhpactorTransformCommand(sublime_plugin.TextCommand):
+    def __init__(self, view):
+        super().__init__(view)
+        self.sublime_api = SublimeApi()
+
+    def run(self, edit, transform):
+        phpactor = Phpactor(self.sublime_api.get_phpactor_settings(self.view))
+        source = self.sublime_api.get_current_file_content(self.view)
+        path = self.sublime_api.get_current_file_path(self.view)
+        request = Phpactor.Rpc.Request('transform', { "source": source, "path": path, "transform": transform })
+        self.sublime_api.log_rpc_sent(request)
+        
+        response, err = phpactor.send_rpc_request(request)
+
+        if err:
+            self.sublime_api.log_error(err.message)
+            return;
+
+        self.sublime_api.log_rpc_received(response)
+
+        self.sublime_api.apply_rpc_action(self.view, response.action, response.parameters)
+
+#################################################
+# Internal Commands [SUBLIME-PHPACTOR] -> Sublime
+#################################################
 
 class PhpactorSublimeEchoCommand(sublime_plugin.TextCommand):
     def __init__(self, view):
@@ -306,3 +336,14 @@ class PhpactorSublimeOpenFileCommandFileOpenedEventListener(sublime_plugin.Event
             SublimeApi().set_current_position_by_byte_offset(view, PhpactorSublimeOpenFileCommand.offset)
             PhpactorSublimeOpenFileCommand.file_path = ''
             PhpactorSublimeOpenFileCommand.offset = ''
+
+class PhpactorSublimeUpdateFileSourceCommand(sublime_plugin.TextCommand):
+    def __init__(self, view):
+        super().__init__(view)
+        self.sublime_api = SublimeApi()
+
+    def run(self, edit, path, edits, source):
+        if self.view.file_name() != path:
+            return
+
+        self.view.replace(edit, sublime.Region(0, self.view.size()), source)
