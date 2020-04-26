@@ -58,6 +58,12 @@ class SublimeApi:
         view.sel().clear()
         for selection in selections:
             view.sel().add(sublime.Region(selection[0], selection[1]))
+            view.show_at_center(selection[0])
+
+    def set_current_position_by_byte_offset(self, view, offset):
+        view.sel().clear()
+        view.sel().add(sublime.Region(offset))
+        sublime.set_timeout(lambda: view.show_at_center(offset), 0)
 
     def get_current_position(self, view):
         for region in view.sel():
@@ -167,7 +173,7 @@ class PhpactorEchoCommand(sublime_plugin.TextCommand):
 
     def run(self, edit, message = "Hello"):
 
-        print(self.sublime_api.get_working_dir(self.view))
+        print(self.sublime_api.get_current_position(self.view))
 
         phpactor = Phpactor(self.sublime_api.get_phpactor_settings(self.view))
         request = Phpactor.Rpc.Request('echo', { "message": message })
@@ -253,12 +259,13 @@ class PhpactorSublimeFileReferencesCommand(sublime_plugin.TextCommand):
         self.files = []
         options = []
         self.selections_before = self.sublime_api.get_current_selections(self.view)
+        self.file_before = self.sublime_api.get_current_file_path(self.view)
         for file_reference in file_references:
             for line_reference in file_reference['references']:
                 pos = ":" + str(line_reference['line_no']) + ":" + str(line_reference['col_no'] + 1) # col starts from 1 in sublime, api returns from 0
                 file_name = os.path.basename(file_reference['file'])
                 file_absolute_path = file_reference['file']
-                file_relative_path = file_absolute_path.replace(self.sublime_api.get_working_dir(self.view), '')
+                file_relative_path = file_absolute_path.replace(self.sublime_api.get_working_dir(self.view) + '/', '')
                 self.files.append(file_absolute_path + pos);
                 options.append([file_name + pos, file_relative_path + pos])
 
@@ -267,10 +274,35 @@ class PhpactorSublimeFileReferencesCommand(sublime_plugin.TextCommand):
     def open_file(self, index):
         if index == -1:
             self.sublime_api.close_file_preview(self.view, self.preview_file) # close preview
-            self.sublime_api.set_selections(self.view, self.selections_before) # restore previous state
+            self.sublime_api.open_file(self.view, self.file_before) # restore file view
+            self.sublime_api.set_selections(self.view, self.selections_before) # restore previous selection
             return
 
         self.sublime_api.open_file(self.view, self.files[index]); # jump to file
 
     def show_preview(self, index):
         self.preview_file = self.sublime_api.open_file_preview(self.view, self.files[index]);
+
+class PhpactorSublimeOpenFileCommand(sublime_plugin.TextCommand):
+    view = None
+    offset = 0
+    def __init__(self, view):
+        super().__init__(view)
+        self.sublime_api = SublimeApi()
+
+    def run(self, edit, force_reload, path, offset, target):
+        file_view = self.sublime_api.open_file(self.view, path)
+        
+        if file_view.is_loading(): # need to wait for file open (see PhpactorSublimeOpenFileCommandFileOpenedEventListener)
+            PhpactorSublimeOpenFileCommand.view = file_view
+            PhpactorSublimeOpenFileCommand.offset = offset
+            return;
+
+        self.sublime_api.set_current_position_by_byte_offset(file_view, offset)
+
+class PhpactorSublimeOpenFileCommandFileOpenedEventListener(sublime_plugin.EventListener):
+    def on_load_async(self,view):
+        if view == PhpactorSublimeOpenFileCommand.view:
+            SublimeApi().set_current_position_by_byte_offset(view, PhpactorSublimeOpenFileCommand.offset)
+            PhpactorSublimeOpenFileCommand.file_path = ''
+            PhpactorSublimeOpenFileCommand.offset = ''
