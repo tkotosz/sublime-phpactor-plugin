@@ -12,13 +12,8 @@ class SublimeApi:
         )
 
     def apply_rpc_action(self, view, action_name, parameters):
-        if action_name == 'collection':
-            for action in parameters['actions']:
-                self.log('applying editor action', action['name'])
-                view.run_command('phpactor_sublime_' + action['name'], action['parameters'])
-        else:
-            self.log('applying editor action', action_name)
-            view.run_command('phpactor_sublime_' + action_name, parameters)
+        self.log_editor_action({'name': action_name, 'parameters': parameters})
+        view.run_command('phpactor_editor_action_' + action_name, parameters)
 
     def insert_to_current_positions(self, view, edit, text):
         for region in view.sel():
@@ -95,6 +90,9 @@ class SublimeApi:
     def log_rpc_error(self, error):
         self.log('<-- phpactor(rpc)', error)
 
+    def log_editor_action(self, action):
+        self.log('--> sublime(editor-action)', action)
+
     def log(self, *message):
         print("[SUBLIME-PHPACTOR]", *message)
 
@@ -130,7 +128,7 @@ class Phpactor:
                 self.parameters = parameters
 
             def to_json(self):
-                return json.dumps(self, default=lambda o: o.__dict__)
+                return json.dumps({'action': self.action, 'parameters': self.parameters}, sort_keys=True)
 
         class Response:
             def __init__(self, action, parameters):
@@ -142,7 +140,7 @@ class Phpactor:
                 return Phpactor.Rpc.Response(d['action'], d['parameters'])
 
             def to_json(self):
-                return json.dumps(self, default=lambda o: o.__dict__)
+                return json.dumps({'action': self.action, 'parameters': self.parameters}, sort_keys=True)
 
         class GeneralError:
             def __init__(self, message):
@@ -180,15 +178,26 @@ class Phpactor:
 # Public Commands [SUBLIME-PHPACTOR] -> Phpactor
 #################################################
 
-class PhpactorRpcCallCommand(sublime_plugin.TextCommand):
+class PhpactorRpcCommand(sublime_plugin.TextCommand):
     def __init__(self, view):
         super().__init__(view)
         self.sublime_api = SublimeApi()
 
     def run(self, edit, action, parameters):
         phpactor = Phpactor(self.sublime_api.get_phpactor_settings(self.view))
-        request = Phpactor.Rpc.Request(action, parameters)
-        phpactor.send_rpc_request(request, self.before_send, self.on_error, self.on_done)
+        phpactor.send_rpc_request(self.create_request(action, parameters), self.before_send, self.on_error, self.on_done)
+
+    def create_request(self, action, parameters):
+        if 'source' in parameters:
+            parameters['source'] = parameters['source'].replace('@current_source', self.sublime_api.get_current_file_content(self.view))
+
+        if 'path' in parameters:
+            parameters['path'] = parameters['path'].replace('@current_path', self.sublime_api.get_current_file_path(self.view))
+
+        if 'offset' in parameters:
+            parameters['offset'] = int(str(parameters['offset']).replace('@current_offset', str(self.sublime_api.get_current_position(self.view))))
+
+        return Phpactor.Rpc.Request(action, parameters)
 
     def before_send(self, request):
         self.sublime_api.log_rpc_request(request)
@@ -201,10 +210,6 @@ class PhpactorRpcCallCommand(sublime_plugin.TextCommand):
         self.sublime_api.apply_rpc_action(self.view, response.action, response.parameters)
 
 class PhpactorEchoCommand(sublime_plugin.TextCommand):
-    def __init__(self, view):
-        super().__init__(view)
-        self.sublime_api = SublimeApi()
-
     def run(self, edit):
         request = {
             'action': 'echo',
@@ -212,95 +217,76 @@ class PhpactorEchoCommand(sublime_plugin.TextCommand):
                 'message': 'Phpactor Status: OK'
             }
         }
-        self.view.run_command('phpactor_rpc_call', request)
+        self.view.run_command('phpactor_rpc', request)
 
 class PhpactorReferencesCommand(sublime_plugin.TextCommand):
-    def __init__(self, view):
-        super().__init__(view)
-        self.sublime_api = SublimeApi()
-
     def run(self, edit):
         request = {
             'action': 'references',
             'parameters': {
-                'source': self.sublime_api.get_current_file_content(self.view),
-                'path': self.sublime_api.get_current_file_path(self.view),
-                'offset': self.sublime_api.get_current_position(self.view)
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset'
             }
         }
-        self.view.run_command('phpactor_rpc_call', request)
+        self.view.run_command('phpactor_rpc', request)
 
 class PhpactorGotoDefinitionCommand(sublime_plugin.TextCommand):
-    def __init__(self, view):
-        super().__init__(view)
-        self.sublime_api = SublimeApi()
-
     def run(self, edit):
         request = {
             'action': 'goto_definition',
             'parameters': {
-                'source': self.sublime_api.get_current_file_content(self.view),
-                'path': self.sublime_api.get_current_file_path(self.view),
-                'offset': self.sublime_api.get_current_position(self.view),
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset',
                 'target': 'focused_window'
             }
         }
-        self.view.run_command('phpactor_rpc_call', request)
+
+        self.view.run_command('phpactor_rpc', request)
 
 class PhpactorTransformCommand(sublime_plugin.TextCommand):
-    def __init__(self, view):
-        super().__init__(view)
-        self.sublime_api = SublimeApi()
-
     def run(self, edit, transform):
         request = {
             'action': 'transform',
             'parameters': {
-                'source': self.sublime_api.get_current_file_content(self.view),
-                'path': self.sublime_api.get_current_file_path(self.view),
+                'source': '@current_source',
+                'path': '@current_path',
                 'transform': transform
             }
         }
-        self.view.run_command('phpactor_rpc_call', request)
+        self.view.run_command('phpactor_rpc', request)
 
 
 class PhpactorGenerateAccessorsCommand(sublime_plugin.TextCommand):
-    def __init__(self, view):
-        super().__init__(view)
-        self.sublime_api = SublimeApi()
-
     def run(self, edit, names=None):
         request = {
             'action': 'generate_accessor',
             'parameters': {
-                'source': self.sublime_api.get_current_file_content(self.view),
-                'path': self.sublime_api.get_current_file_path(self.view),
-                'offset': self.sublime_api.get_current_position(self.view)
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset'
             }
         }
-        self.view.run_command('phpactor_rpc_call', request)
+        self.view.run_command('phpactor_rpc', request)
 
 class PhpactorGenerateMethodCommand(sublime_plugin.TextCommand):
-    def __init__(self, view):
-        super().__init__(view)
-        self.sublime_api = SublimeApi()
-
-    def run(self, edit, names=None):
+    def run(self, edit):
         request = {
             'action': 'generate_method',
             'parameters': {
-                'source': self.sublime_api.get_current_file_content(self.view),
-                'path': self.sublime_api.get_current_file_path(self.view),
-                'offset': self.sublime_api.get_current_position(self.view)
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset'
             }
         }
-        self.view.run_command('phpactor_rpc_call', request)
+        self.view.run_command('phpactor_rpc', request)
 
 ##################################################################
 # Internal Commands (Editor Actions) [SUBLIME-PHPACTOR] -> Sublime
 ##################################################################
 
-class PhpactorSublimeEchoCommand(sublime_plugin.TextCommand):
+class PhpactorEditorActionEchoCommand(sublime_plugin.TextCommand):
     def __init__(self, view):
         super().__init__(view)
         self.sublime_api = SublimeApi()
@@ -308,7 +294,7 @@ class PhpactorSublimeEchoCommand(sublime_plugin.TextCommand):
     def run(self, edit, message = "Hello"):
         self.sublime_api.update_status_message(message)
 
-class PhpactorSublimeErrorCommand(sublime_plugin.TextCommand):
+class PhpactorEditorActionErrorCommand(sublime_plugin.TextCommand):
     def __init__(self, view):
         super().__init__(view)
         self.sublime_api = SublimeApi()
@@ -316,7 +302,16 @@ class PhpactorSublimeErrorCommand(sublime_plugin.TextCommand):
     def run(self, edit, message, details):
         self.sublime_api.update_status_message("Phpactor Error: " + message)
 
-class PhpactorSublimeFileReferencesCommand(sublime_plugin.TextCommand):
+class PhpactorEditorActionCollectionCommand(sublime_plugin.TextCommand):
+    def __init__(self, view):
+        super().__init__(view)
+        self.sublime_api = SublimeApi()
+
+    def run(self, edit, actions):
+        for action in actions:
+            self.sublime_api.apply_rpc_action(self.view, action['name'], action['parameters'])
+
+class PhpactorEditorActionFileReferencesCommand(sublime_plugin.TextCommand):
     def __init__(self, view):
         super().__init__(view)
         self.sublime_api = SublimeApi()
@@ -349,7 +344,7 @@ class PhpactorSublimeFileReferencesCommand(sublime_plugin.TextCommand):
     def show_preview(self, index):
         self.preview_file = self.sublime_api.open_file_preview(self.view, self.files[index]);
 
-class PhpactorSublimeOpenFileCommand(sublime_plugin.TextCommand):
+class PhpactorEditorActionOpenFileCommand(sublime_plugin.TextCommand):
     view = None
     offset = 0
     def __init__(self, view):
@@ -359,21 +354,21 @@ class PhpactorSublimeOpenFileCommand(sublime_plugin.TextCommand):
     def run(self, edit, force_reload, path, offset, target):
         file_view = self.sublime_api.open_file(self.view, path)
         
-        if file_view.is_loading(): # need to wait for file open (see PhpactorSublimeOpenFileCommandFileOpenedEventListener)
-            PhpactorSublimeOpenFileCommand.view = file_view
-            PhpactorSublimeOpenFileCommand.offset = offset
+        if file_view.is_loading(): # need to wait for file open (see PhpactorEditorActionOpenFileCommandFileOpenedEventListener)
+            PhpactorEditorActionOpenFileCommand.view = file_view
+            PhpactorEditorActionOpenFileCommand.offset = offset
             return;
 
         self.sublime_api.set_current_position_by_byte_offset(file_view, offset)
 
-class PhpactorSublimeOpenFileCommandFileOpenedEventListener(sublime_plugin.EventListener):
+class PhpactorEditorActionOpenFileCommandFileOpenedEventListener(sublime_plugin.EventListener):
     def on_load_async(self,view):
-        if view == PhpactorSublimeOpenFileCommand.view:
-            SublimeApi().set_current_position_by_byte_offset(view, PhpactorSublimeOpenFileCommand.offset)
-            PhpactorSublimeOpenFileCommand.file_path = ''
-            PhpactorSublimeOpenFileCommand.offset = ''
+        if view == PhpactorEditorActionOpenFileCommand.view:
+            SublimeApi().set_current_position_by_byte_offset(view, PhpactorEditorActionOpenFileCommand.offset)
+            PhpactorEditorActionOpenFileCommand.file_path = ''
+            PhpactorEditorActionOpenFileCommand.offset = ''
 
-class PhpactorSublimeInputCallbackCommand(sublime_plugin.TextCommand):
+class PhpactorEditorActionInputCallbackCommand(sublime_plugin.TextCommand):
     def __init__(self, view):
         super().__init__(view)
         self.sublime_api = SublimeApi()
@@ -395,4 +390,4 @@ class PhpactorSublimeInputCallbackCommand(sublime_plugin.TextCommand):
         else:
             callback['parameters']['names'] = [items[index]]
 
-        self.view.run_command('phpactor_rpc_call', callback)
+        self.view.run_command('phpactor_rpc', callback)
