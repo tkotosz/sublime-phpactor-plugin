@@ -28,20 +28,40 @@ class SublimeApi:
     def show_quick_panel(self, view, items, on_select, on_highlight):
         view.window().show_quick_panel(items, on_select, on_highlight=on_highlight)
 
-    def open_file(self, view, file_path, preview_mode = 0):
+    def open_file(self, view, file_path):
         flags = 0
         
         if file_path.find(":") != -1:
             flags |= sublime.ENCODED_POSITION
 
-        if preview_mode:
-            flags |= sublime.TRANSIENT | getattr(sublime, 'FORCE_GROUP', 0)
+        return view.window().open_file(file_path, flags)
+
+    def open_file_preview(self, view, file_path):
+        flags = sublime.TRANSIENT | getattr(sublime, 'FORCE_GROUP', 0)
+
+        if file_path.find(":") != -1:
+            flags |= sublime.ENCODED_POSITION
 
         return view.window().open_file(file_path, flags)
 
+    def close_file_preview(self, view, file):
+        if not file:
+            return
+
+        if view.window().get_view_index(file)[1] == -1: # it is a file open for preview if it has no tab
+            view.window().run_command("close_file")
+
+    def get_current_selections(self, view):
+        return [(selection.begin(), selection.end()) for selection in view.sel()]
+
+    def set_selections(self, view, selections):
+        view.sel().clear()
+        for selection in selections:
+            view.sel().add(sublime.Region(selection[0], selection[1]))
+
     def get_current_position(self, view):
         for region in view.sel():
-            return view.line(region).begin()
+            return region.begin()
 
     def get_current_line(self, view):
         for region in view.sel():
@@ -51,7 +71,12 @@ class SublimeApi:
         return view.substr(sublime.Region(0, view.size()))
 
     def get_current_file_path(self, view):
-        return view.file_name()
+        file_path = view.file_name();
+
+        if file_path:
+            return file_path
+
+        return "" # unsaved file
 
     def log_rpc_sent(self, request):
         self.log('--> phpactor(rpc)', request.to_json())
@@ -69,10 +94,20 @@ class SublimeApi:
         return '/home/tkotosz/Sites/phpactor/bin/phpactor' #todo
 
     def get_working_dir(self, view):
-        for folder in view.window().folders():
-            if os.path.isfile(folder + '/composer.json'):
-                return folder
-        return None
+        current_file_path = view.file_name()
+
+        if current_file_path:
+            for folder in view.window().folders():
+                if current_file_path.find(folder) == 0:
+                    return folder # root folder of the file must be the "project" root
+
+            return os.path.dirname(current_file_path) # single file opened in sublime, lets use it's folder as working dir
+        else: # unsaved file
+            for folder in view.window().folders():
+                return folder # assume that it belongs to the first folder
+
+        return None # unsaved file & no folder open in the sidebar
+
 
 class Phpactor:
     class Settings:
@@ -131,6 +166,9 @@ class PhpactorEchoCommand(sublime_plugin.TextCommand):
         self.sublime_api = SublimeApi()
 
     def run(self, edit, message = "Hello"):
+
+        print(self.sublime_api.get_working_dir(self.view))
+
         phpactor = Phpactor(self.sublime_api.get_phpactor_settings(self.view))
         request = Phpactor.Rpc.Request('echo', { "message": message })
         self.sublime_api.log_rpc_sent(request)
@@ -149,12 +187,35 @@ class PhpactorReferencesCommand(sublime_plugin.TextCommand):
         super().__init__(view)
         self.sublime_api = SublimeApi()
 
-    def run(self, edit, message = "Hello"):
+    def run(self, edit):
         phpactor = Phpactor(self.sublime_api.get_phpactor_settings(self.view))
         offset = self.sublime_api.get_current_position(self.view)
         source = self.sublime_api.get_current_file_content(self.view)
         path = self.sublime_api.get_current_file_path(self.view)
         request = Phpactor.Rpc.Request('references', { "offset": offset, "source": source, "path": path })
+        self.sublime_api.log_rpc_sent(request)
+        
+        response, err = phpactor.send_rpc_request(request)
+
+        if err:
+            self.sublime_api.log_error(err.message)
+            return;
+
+        self.sublime_api.log_rpc_received(response)
+
+        self.sublime_api.apply_rpc_action(self.view, response.action, response.parameters)
+
+class PhpactorGotoDefinitionCommand(sublime_plugin.TextCommand):
+    def __init__(self, view):
+        super().__init__(view)
+        self.sublime_api = SublimeApi()
+
+    def run(self, edit):
+        phpactor = Phpactor(self.sublime_api.get_phpactor_settings(self.view))
+        offset = self.sublime_api.get_current_position(self.view)
+        source = self.sublime_api.get_current_file_content(self.view)
+        path = self.sublime_api.get_current_file_path(self.view)
+        request = Phpactor.Rpc.Request('goto_definition', { "offset": offset, "source": source, "path": path, "target": "focused_window" })
         self.sublime_api.log_rpc_sent(request)
         
         response, err = phpactor.send_rpc_request(request)
@@ -190,29 +251,26 @@ class PhpactorSublimeFileReferencesCommand(sublime_plugin.TextCommand):
 
     def run(self, edit, file_references):
         self.files = []
+        options = []
+        self.selections_before = self.sublime_api.get_current_selections(self.view)
         for file_reference in file_references:
             for line_reference in file_reference['references']:
-                line = str(line_reference['line_no'])
+                pos = ":" + str(line_reference['line_no']) + ":" + str(line_reference['col_no'] + 1) # col starts from 1 in sublime, api returns from 0
                 file_name = os.path.basename(file_reference['file'])
-                file_path = file_reference['file']
-                info = [file_name + ":" + line, file_path]
-                self.files.append(info)
+                file_absolute_path = file_reference['file']
+                file_relative_path = file_absolute_path.replace(self.sublime_api.get_working_dir(self.view), '')
+                self.files.append(file_absolute_path + pos);
+                options.append([file_name + pos, file_relative_path + pos])
 
-        self.sublime_api.show_quick_panel(self.view, self.files, self.open_file, self.show_preview)
+        self.sublime_api.show_quick_panel(self.view, options, self.open_file, self.show_preview)
 
     def open_file(self, index):
         if index == -1:
-            self.close_preview()
+            self.sublime_api.close_file_preview(self.view, self.preview_file) # close preview
+            self.sublime_api.set_selections(self.view, self.selections_before) # restore previous state
             return
 
-        self.sublime_api.open_file(self.view, os.path.dirname(self.files[index][1]) + "/" + self.files[index][0]);
-
-    def close_preview(self):
-        if not self.preview:
-            return
-
-        if self.view.window().get_view_index(self.preview)[1] == -1: # preview is open (it has no tab)
-            self.view.window().run_command("close_file")
+        self.sublime_api.open_file(self.view, self.files[index]); # jump to file
 
     def show_preview(self, index):
-        self.preview = self.sublime_api.open_file(self.view, os.path.dirname(self.files[index][1]) + "/" + self.files[index][0], 1);
+        self.preview_file = self.sublime_api.open_file_preview(self.view, self.files[index]);
