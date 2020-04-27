@@ -97,7 +97,7 @@ class SublimeApi:
         print("[SUBLIME-PHPACTOR]", *message)
 
     def get_phpactor_bin(self):
-        return '/home/tkotosz/Sites/phpactor/bin/phpactor' #todo
+        return '/home/tkotosz/Sites/phpactor/bin/phpactor' # TODO get this from settings
 
     def get_working_dir(self, view):
         current_file_path = view.file_name()
@@ -204,6 +204,7 @@ class PhpactorRpcCommand(sublime_plugin.TextCommand):
 
     def on_error(self, err):
         self.sublime_api.log_rpc_error(err.message)
+        self.sublime_api.apply_rpc_action(self.view, 'error', { 'message': 'RPC request failed with unknown error (see logs)', 'details': err.message })
 
     def on_done(self, response):
         self.sublime_api.log_rpc_response(response)
@@ -287,29 +288,17 @@ class PhpactorGenerateMethodCommand(sublime_plugin.TextCommand):
 ##################################################################
 
 class PhpactorEditorActionEchoCommand(sublime_plugin.TextCommand):
-    def __init__(self, view):
-        super().__init__(view)
-        self.sublime_api = SublimeApi()
-
     def run(self, edit, message = "Hello"):
-        self.sublime_api.update_status_message(message)
+        sublime.run_command('tk_show_status_message', { 'message': message })
 
 class PhpactorEditorActionErrorCommand(sublime_plugin.TextCommand):
-    def __init__(self, view):
-        super().__init__(view)
-        self.sublime_api = SublimeApi()
-
     def run(self, edit, message, details):
-        self.sublime_api.update_status_message("Phpactor Error: " + message)
+        sublime.run_command('tk_show_status_message', { 'message': 'Phpactor Error: ' + message })
 
 class PhpactorEditorActionCollectionCommand(sublime_plugin.TextCommand):
-    def __init__(self, view):
-        super().__init__(view)
-        self.sublime_api = SublimeApi()
-
     def run(self, edit, actions):
         for action in actions:
-            self.sublime_api.apply_rpc_action(self.view, action['name'], action['parameters'])
+            self.view.run_command('phpactor_editor_action_' + action['name'], action['parameters'])
 
 class PhpactorEditorActionFileReferencesCommand(sublime_plugin.TextCommand):
     def __init__(self, view):
@@ -317,77 +306,126 @@ class PhpactorEditorActionFileReferencesCommand(sublime_plugin.TextCommand):
         self.sublime_api = SublimeApi()
 
     def run(self, edit, file_references):
-        self.files = []
+        window = self.view.window();
+        original_selections = [r for r in self.view.sel()]
+
+        files = []
         options = []
-        self.selections_before = self.sublime_api.get_current_selections(self.view)
-        self.file_before = self.sublime_api.get_current_file_path(self.view)
         for file_reference in file_references:
             for line_reference in file_reference['references']:
                 pos = ":" + str(line_reference['line_no']) + ":" + str(line_reference['col_no'] + 1) # col starts from 1 in sublime, api returns from 0
                 file_name = os.path.basename(file_reference['file'])
                 file_absolute_path = file_reference['file']
                 file_relative_path = file_absolute_path.replace(self.sublime_api.get_working_dir(self.view) + '/', '')
-                self.files.append(file_absolute_path + pos);
+                files.append(file_absolute_path + pos);
                 options.append([file_name + pos, file_relative_path + pos])
+        
+        window.show_quick_panel(
+            options,
+            on_select=lambda index: self.open_file(index, files, window, self.view, original_selections),
+            on_highlight=lambda index: self.show_preview(index, files, window)
+        )
 
-        self.sublime_api.show_quick_panel(self.view, options, self.open_file, self.show_preview)
-
-    def open_file(self, index):
+    def open_file(self, index, files, window, original_view, original_selections):
         if index == -1:
-            self.sublime_api.close_file_preview(self.view, self.preview_file) # close preview
-            self.sublime_api.open_file(self.view, self.file_before) # restore file view
-            self.sublime_api.set_selections(self.view, self.selections_before) # restore previous selection
+            # restore original view
+            original_view.sel().clear()
+            original_view.sel().add_all(original_selections)
+            window.focus_view(original_view)
+            original_view.show(original_selections[0])
             return
 
-        self.sublime_api.open_file(self.view, self.files[index]); # jump to file
+        window.run_command('tk_open_file', { 'file_path': files[index] })
 
-    def show_preview(self, index):
-        self.preview_file = self.sublime_api.open_file_preview(self.view, self.files[index]);
+    def show_preview(self, index, files, window):
+        window.run_command('tk_open_file_preview', { 'file_path': files[index] })
 
 class PhpactorEditorActionOpenFileCommand(sublime_plugin.TextCommand):
-    view = None
-    offset = 0
-    def __init__(self, view):
-        super().__init__(view)
-        self.sublime_api = SublimeApi()
-
     def run(self, edit, force_reload, path, offset, target):
-        file_view = self.sublime_api.open_file(self.view, path)
-        
-        if file_view.is_loading(): # need to wait for file open (see PhpactorEditorActionOpenFileCommandFileOpenedEventListener)
-            PhpactorEditorActionOpenFileCommand.view = file_view
-            PhpactorEditorActionOpenFileCommand.offset = offset
-            return;
-
-        self.sublime_api.set_current_position_by_byte_offset(file_view, offset)
-
-class PhpactorEditorActionOpenFileCommandFileOpenedEventListener(sublime_plugin.EventListener):
-    def on_load_async(self,view):
-        if view == PhpactorEditorActionOpenFileCommand.view:
-            SublimeApi().set_current_position_by_byte_offset(view, PhpactorEditorActionOpenFileCommand.offset)
-            PhpactorEditorActionOpenFileCommand.file_path = ''
-            PhpactorEditorActionOpenFileCommand.offset = ''
+        self.view.window().run_command('tk_open_file_at_offset', { 'file_path': path, 'offset': offset } )
 
 class PhpactorEditorActionInputCallbackCommand(sublime_plugin.TextCommand):
-    def __init__(self, view):
-        super().__init__(view)
-        self.sublime_api = SublimeApi()
-
     def run(self, edit, inputs, callback):
+        # TODO handle multiple inputs
+        if len(inputs) > 1:
+            return;
+
         for input in inputs:
             items = ['All']
             for item in input['parameters']['choices']:
                 items.append(item)
-            self.sublime_api.show_quick_panel(self.view, items, lambda index: self.select_item(index, items, callback))
 
-    def select_item(self, index, items, callback):
+            self.view.window().show_quick_panel(
+                items,
+                on_select=lambda index: self.select_item(index, items, input['name'], callback)
+            )
+
+    def select_item(self, index, items, property_name, callback):
         if index == -1:
             return;
 
         if items[index] == 'All':
             del items[index]
-            callback['parameters']['names'] = items
+            callback['parameters'][property_name] = items
         else:
-            callback['parameters']['names'] = [items[index]]
+            callback['parameters'][property_name] = [items[index]]
 
         self.view.run_command('phpactor_rpc', callback)
+
+class PhpactorEditorActionUpdateFileSourceCommand(sublime_plugin.TextCommand):
+    def run(self, edit, path, edits, source):
+        # TODO FIX cursor position after source update
+        self.view.run_command('tk_replace_file_content', { 'file_path': path, 'source': source } )
+
+###########################
+# Reusable Sublime Commands
+###########################
+
+class TkShowStatusMessageCommand(sublime_plugin.ApplicationCommand):
+    def run(self, message):
+        sublime.status_message(message)
+
+class TkOpenFileCommand(sublime_plugin.WindowCommand):
+    def run(self, file_path):
+        self.window.open_file(file_path, sublime.ENCODED_POSITION | sublime.FORCE_GROUP, self.window.active_group())
+
+class TkOpenFilePreviewCommand(sublime_plugin.WindowCommand):
+    def run(self, file_path):
+        self.window.open_file(file_path, sublime.TRANSIENT | sublime.ENCODED_POSITION | sublime.FORCE_GROUP, self.window.active_group())
+
+class TkOpenFileAtOffsetCommand(sublime_plugin.WindowCommand):
+    def run(self, file_path, offset):
+        self.window.run_command('tk_open_file', { 'file_path': file_path })
+        self.window.run_command('tk_jump_to_offset', { 'offset': offset })
+
+class TkJumpToOffsetCommand(sublime_plugin.WindowCommand):
+    view = None
+    offset = 0
+    def run(self, offset):
+        view = self.window.active_view();
+        if view.is_loading(): # need to wait for file open (see TkJumpToOffsetFileOpenedEventListener)
+            TkJumpToOffsetCommand.view = view
+            TkJumpToOffsetCommand.offset = int(offset)
+            return;
+
+        view.sel().clear()
+        view.sel().add(sublime.Region(offset))
+        sublime.set_timeout(lambda: view.show_at_center(offset), 0)
+
+class TkJumpToOffsetFileOpenedEventListener(sublime_plugin.EventListener):
+    # very weird but only "on_load_async" + "set_timeout" combination works reliably for some reason :/
+    def on_load_async(self,view):
+        if view == TkJumpToOffsetCommand.view:
+            offset = TkJumpToOffsetCommand.offset
+            view.sel().clear()
+            view.sel().add(sublime.Region(offset))
+            sublime.set_timeout(lambda: view.show_at_center(offset), 0)
+            TkJumpToOffsetCommand.file_path = ''
+            TkJumpToOffsetCommand.offset = ''
+
+class TkReplaceFileContentCommand(sublime_plugin.TextCommand):
+    def run(self, edit, file_path, source):
+        self.view.window().run_command('tk_open_file', { 'file_path': file_path })
+        file_view = self.view.window().find_open_file(file_path)
+        if file_view: # something went wrong while opening the file
+            file_view.replace(edit, sublime.Region(0, file_view.size()), source)
