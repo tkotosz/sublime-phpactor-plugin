@@ -254,7 +254,7 @@ class PhpactorGotoDefinitionCommand(sublime_plugin.TextCommand):
 # { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "fix_namespace_class_name" } },
 # { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "implement_contracts" } },
 class PhpactorTransformCommand(sublime_plugin.TextCommand):
-    def run(self, edit, transform):
+    def run(self, edit, transform = None):
         request = {
             'action': 'transform',
             'parameters': {
@@ -444,6 +444,15 @@ class PhpactorEditorActionInputCallbackCommand(sublime_plugin.TextCommand):
                 self.view.window().show_quick_panel(
                     items,
                     on_select=lambda index: self.select_item(index, items, input['name'], input['parameters']['multi'], callback)
+                )
+
+            if input['type'] == 'choice':
+                for item in input['parameters']['choices']:
+                    items.append(item)
+
+                self.view.window().show_quick_panel(
+                    items,
+                    on_select=lambda index: self.select_item(index, items, input['name'], False, callback)
                 )
 
             if input['type'] == 'text':
