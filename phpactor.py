@@ -322,6 +322,17 @@ class PhpactorMoveClassCommand(sublime_plugin.TextCommand):
         }
         self.view.run_command('phpactor_rpc', request)
 
+class PhpactorOffsetInfoCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'offset_info',
+            'parameters': {
+                'source': '@current_source',
+                'offset': '@current_offset'
+            }
+        }
+        self.view.run_command('phpactor_rpc', request)
+
 class PhpactorClassSearchCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         keyword = self.get_current_word()
@@ -483,6 +494,15 @@ class PhpactorEditorActionOpenFileCommand(sublime_plugin.TextCommand):
 class PhpactorEditorActionCloseFileCommand(sublime_plugin.TextCommand):
     def run(self, edit, path):
         self.view.window().run_command('tk_close_file', { 'file_path': path } )
+
+class PhpactorEditorActionInformationCommand(sublime_plugin.TextCommand):
+    def run(self, edit, information):
+        debug_view = self.view.window().create_output_panel('phpactor_information')
+        debug_view.set_syntax_file('Packages/JavaScript/JSON.sublime-syntax')
+        debug_view.insert(edit, 0, information)
+        self.view.window().run_command('show_panel', { 'panel': 'output.phpactor_information' })
+
+        
 
 ###########################
 # Reusable Sublime Commands
