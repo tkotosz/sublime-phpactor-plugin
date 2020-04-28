@@ -445,30 +445,12 @@ class PhpactorEditorActionInputCallbackCommand(sublime_plugin.TextCommand):
                 )
 
             if input['type'] == 'confirm':
-                yes = []
-                # yes.append("Yes, DO IT!")
+                message = []
                 for line in input['parameters']['label'].split('\n'):
-                    yes.append(line.strip())
+                    message.append(line.strip())
 
-                # no = []
-                # no.append("No")
-                # no.append("Cancel the operation")
-
-                # while len(no) != len(yes):
-                #     no.append("") # sublime bug requires each option to have the same amount of lines
-
-                # self.view.window().show_quick_panel(
-                #     [yes, no],
-                #     lambda index: self.handle_confirm(index, input['name'], callback)
-                # )
-                callback['parameters'][input['name']] = sublime.ok_cancel_dialog('\n\n'.join(yes), 'Confirm')
+                callback['parameters'][input['name']] = sublime.ok_cancel_dialog('\n\n'.join(message), 'Confirm')
                 self.view.run_command('phpactor_rpc', callback)
-
-    # def handle_confirm(self, index, property_name, callback):
-    #     print("the option is ", index)
-    #     if index == 0:
-    #         callback['parameters'][input['name']] = True
-    #         self.view.run_command('phpactor_rpc', callback)
 
     def select_item(self, index, items, property_name, is_multi, callback):
         if index == -1:
