@@ -312,6 +312,16 @@ class PhpactorCopyClassCommand(sublime_plugin.TextCommand):
         }
         self.view.run_command('phpactor_rpc', request)
 
+class PhpactorMoveClassCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'move_class',
+            'parameters': {
+                'source_path': '@current_path'
+            }
+        }
+        self.view.run_command('phpactor_rpc', request)
+
 class PhpactorClassSearchCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         keyword = self.get_current_word()
@@ -434,6 +444,32 @@ class PhpactorEditorActionInputCallbackCommand(sublime_plugin.TextCommand):
                     None
                 )
 
+            if input['type'] == 'confirm':
+                yes = []
+                # yes.append("Yes, DO IT!")
+                for line in input['parameters']['label'].split('\n'):
+                    yes.append(line.strip())
+
+                # no = []
+                # no.append("No")
+                # no.append("Cancel the operation")
+
+                # while len(no) != len(yes):
+                #     no.append("") # sublime bug requires each option to have the same amount of lines
+
+                # self.view.window().show_quick_panel(
+                #     [yes, no],
+                #     lambda index: self.handle_confirm(index, input['name'], callback)
+                # )
+                callback['parameters'][input['name']] = sublime.ok_cancel_dialog('\n\n'.join(yes), 'Confirm')
+                self.view.run_command('phpactor_rpc', callback)
+
+    # def handle_confirm(self, index, property_name, callback):
+    #     print("the option is ", index)
+    #     if index == 0:
+    #         callback['parameters'][input['name']] = True
+    #         self.view.run_command('phpactor_rpc', callback)
+
     def select_item(self, index, items, property_name, is_multi, callback):
         if index == -1:
             return;
@@ -462,6 +498,10 @@ class PhpactorEditorActionOpenFileCommand(sublime_plugin.TextCommand):
     def run(self, edit, force_reload, path, offset, target):
         self.view.window().run_command('tk_open_file', { 'file_path': path } )
 
+class PhpactorEditorActionCloseFileCommand(sublime_plugin.TextCommand):
+    def run(self, edit, path):
+        self.view.window().run_command('tk_close_file', { 'file_path': path } )
+
 ###########################
 # Reusable Sublime Commands
 ###########################
@@ -473,6 +513,11 @@ class TkShowStatusMessageCommand(sublime_plugin.ApplicationCommand):
 class TkOpenFileCommand(sublime_plugin.WindowCommand):
     def run(self, file_path):
         self.window.open_file(file_path, sublime.ENCODED_POSITION | sublime.FORCE_GROUP, self.window.active_group())
+
+class TkCloseFileCommand(sublime_plugin.WindowCommand):
+    def run(self, file_path):
+        file_view = self.window.find_open_file(file_path)
+        file_view.close() # undocumented function but exists! (otherwise I would have to switch to it, trigger a close current file then switch back)
 
 class TkOpenFilePreviewCommand(sublime_plugin.WindowCommand):
     def run(self, file_path):
