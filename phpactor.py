@@ -194,6 +194,9 @@ class PhpactorRpcCommand(sublime_plugin.TextCommand):
         if 'path' in parameters:
             parameters['path'] = parameters['path'].replace('@current_path', self.sublime_api.get_current_file_path(self.view))
 
+        if 'source_path' in parameters:
+            parameters['source_path'] = parameters['source_path'].replace('@current_path', self.sublime_api.get_current_file_path(self.view))
+
         if 'offset' in parameters:
             parameters['offset'] = int(str(parameters['offset']).replace('@current_offset', str(self.sublime_api.get_current_position(self.view))))
 
@@ -246,6 +249,10 @@ class PhpactorGotoDefinitionCommand(sublime_plugin.TextCommand):
 
         self.view.run_command('phpactor_rpc', request)
 
+# { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "complete_constructor" } },
+# { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "add_missing_properties" } },
+# { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "fix_namespace_class_name" } },
+# { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "implement_contracts" } },
 class PhpactorTransformCommand(sublime_plugin.TextCommand):
     def run(self, edit, transform):
         request = {
@@ -283,6 +290,58 @@ class PhpactorGenerateMethodCommand(sublime_plugin.TextCommand):
         }
         self.view.run_command('phpactor_rpc', request)
 
+class PhpactorImportClassCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'import_class',
+            'parameters': {
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset'
+            }
+        }
+        self.view.run_command('phpactor_rpc', request)
+
+class PhpactorCopyClassCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'copy_class',
+            'parameters': {
+                'source_path': '@current_path'
+            }
+        }
+        self.view.run_command('phpactor_rpc', request)
+
+class PhpactorClassSearchCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        keyword = self.get_current_word()
+
+        if not keyword:
+            return
+
+        request = {
+            'action': 'class_search',
+            'parameters': {
+                'short_name': keyword
+            }
+        }
+
+        # TODO this just returns a choice list, I don't know what to do with it yet
+        self.view.run_command('phpactor_rpc', request)
+
+    def get_current_word(self):
+        keyword = ''
+        for region in self.view.sel():
+            if region.begin() == region.end():
+                word = self.view.word(region)
+            else:
+                word = region
+
+            if not word.empty():
+                keyword = self.view.substr(word)
+        
+        return keyword
+
 ##################################################################
 # Internal Commands (Editor Actions) [SUBLIME-PHPACTOR] -> Sublime
 ##################################################################
@@ -297,8 +356,9 @@ class PhpactorEditorActionErrorCommand(sublime_plugin.TextCommand):
 
 class PhpactorEditorActionCollectionCommand(sublime_plugin.TextCommand):
     def run(self, edit, actions):
+        sublimeApi = SublimeApi()
         for action in actions:
-            self.view.run_command('phpactor_editor_action_' + action['name'], action['parameters'])
+            sublimeApi.apply_rpc_action(self.view, action['name'], action['parameters'])
 
 class PhpactorEditorActionFileReferencesCommand(sublime_plugin.TextCommand):
     def __init__(self, view):
@@ -351,31 +411,56 @@ class PhpactorEditorActionInputCallbackCommand(sublime_plugin.TextCommand):
             return;
 
         for input in inputs:
-            items = ['All']
-            for item in input['parameters']['choices']:
-                items.append(item)
+            items = []
 
-            self.view.window().show_quick_panel(
-                items,
-                on_select=lambda index: self.select_item(index, items, input['name'], callback)
-            )
+            if input['type'] == 'list':
+                if input['parameters']['multi']:
+                    items.append('All')
 
-    def select_item(self, index, items, property_name, callback):
+                for item in input['parameters']['choices']:
+                    items.append(item)
+
+                self.view.window().show_quick_panel(
+                    items,
+                    on_select=lambda index: self.select_item(index, items, input['name'], input['parameters']['multi'], callback)
+                )
+
+            if input['type'] == 'text':
+                self.view.window().show_input_panel(
+                    input['parameters']['label'],
+                    input['parameters']['default'],
+                    lambda alias: self.handle_input(alias, input['name'], callback),
+                    None,
+                    None
+                )
+
+    def select_item(self, index, items, property_name, is_multi, callback):
         if index == -1:
             return;
 
-        if items[index] == 'All':
-            del items[index]
-            callback['parameters'][property_name] = items
+        if is_multi:
+            if items[index] == 'All':
+                del items[index]
+                callback['parameters'][property_name] = items
+            else:
+                callback['parameters'][property_name] = [items[index]]
         else:
-            callback['parameters'][property_name] = [items[index]]
+            callback['parameters'][property_name] = items[index]
 
+        self.view.run_command('phpactor_rpc', callback)
+
+    def handle_input(self, alias, property_name, callback):
+        callback['parameters'][property_name] = alias
         self.view.run_command('phpactor_rpc', callback)
 
 class PhpactorEditorActionUpdateFileSourceCommand(sublime_plugin.TextCommand):
     def run(self, edit, path, edits, source):
         # TODO FIX cursor position after source update
         self.view.run_command('tk_replace_file_content', { 'file_path': path, 'source': source } )
+
+class PhpactorEditorActionOpenFileCommand(sublime_plugin.TextCommand):
+    def run(self, edit, force_reload, path, offset, target):
+        self.view.window().run_command('tk_open_file', { 'file_path': path } )
 
 ###########################
 # Reusable Sublime Commands
