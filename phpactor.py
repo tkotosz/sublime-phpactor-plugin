@@ -402,7 +402,6 @@ class PhpactorNavigateCommand(sublime_plugin.TextCommand):
                 'source_path': '@current_path'
             }
         }
-        # TODO tried to setup config for this but it always returns empty choice list
         self.view.run_command('phpactor_rpc', request)
 
 class PhpactorImportMissingClassesCommand(sublime_plugin.TextCommand):
@@ -414,7 +413,17 @@ class PhpactorImportMissingClassesCommand(sublime_plugin.TextCommand):
                 'path': '@current_path'
             }
         }
-        # TODO tried to setup config for this but it always returns empty choice list
+        self.view.run_command('phpactor_rpc', request)
+
+class PhpactorOverrideMethodCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'override_method',
+            'parameters': {
+                'source': '@current_source',
+                'path': '@current_path'
+            }
+        }
         self.view.run_command('phpactor_rpc', request)
 
 class PhpactorClassSearchCommand(sublime_plugin.TextCommand):
