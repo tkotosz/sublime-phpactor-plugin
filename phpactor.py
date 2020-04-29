@@ -240,6 +240,20 @@ class PhpactorGotoDefinitionCommand(sublime_plugin.TextCommand):
 
         self.view.run_command('phpactor_rpc', request)
 
+class PhpactorGotoTypeCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'goto_type',
+            'parameters': {
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset',
+                'target': 'focused_window'
+            }
+        }
+
+        self.view.run_command('phpactor_rpc', request)
+
 # { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "complete_constructor" } },
 # { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "add_missing_properties" } },
 # { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "fix_namespace_class_name" } },
@@ -252,31 +266,6 @@ class PhpactorTransformCommand(sublime_plugin.TextCommand):
                 'source': '@current_source',
                 'path': '@current_path',
                 'transform': transform
-            }
-        }
-        self.view.run_command('phpactor_rpc', request)
-
-
-class PhpactorGenerateAccessorsCommand(sublime_plugin.TextCommand):
-    def run(self, edit, names=None):
-        request = {
-            'action': 'generate_accessor',
-            'parameters': {
-                'source': '@current_source',
-                'path': '@current_path',
-                'offset': '@current_offset'
-            }
-        }
-        self.view.run_command('phpactor_rpc', request)
-
-class PhpactorGenerateMethodCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        request = {
-            'action': 'generate_method',
-            'parameters': {
-                'source': '@current_source',
-                'path': '@current_path',
-                'offset': '@current_offset'
             }
         }
         self.view.run_command('phpactor_rpc', request)
@@ -367,6 +356,53 @@ class PhpactorExtractConstantCommand(sublime_plugin.TextCommand):
                 'offset': '@current_offset'
             }
         }
+        self.view.run_command('phpactor_rpc', request)
+
+class PhpactorGenerateMethodCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'generate_method',
+            'parameters': {
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset'
+            }
+        }
+        self.view.run_command('phpactor_rpc', request)
+
+class PhpactorGenerateAccessorsCommand(sublime_plugin.TextCommand):
+    def run(self, edit, names=None):
+        request = {
+            'action': 'generate_accessor',
+            'parameters': {
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset'
+            }
+        }
+        self.view.run_command('phpactor_rpc', request)
+
+class PhpactorContextMenuCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'context_menu',
+            'parameters': {
+                'source': '@current_source',
+                'current_path': '@current_path',
+                'offset': '@current_offset'
+            }
+        }
+        self.view.run_command('phpactor_rpc', request)
+
+class PhpactorNavigateCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'navigate',
+            'parameters': {
+                'source_path': '@current_path'
+            }
+        }
+        # TODO tried to setup config for this but it always returns empty choice list
         self.view.run_command('phpactor_rpc', request)
 
 class PhpactorClassSearchCommand(sublime_plugin.TextCommand):
@@ -469,7 +505,6 @@ class PhpactorEditorActionInputCallbackCommand(sublime_plugin.TextCommand):
         if len(inputs) > 0: # we have more inputs
             next = lambda callback: self.view.run_command('phpactor_editor_action_input_callback', { 'inputs': inputs, 'callback': callback })
 
-
         if input['type'] == 'list':
             items = []
 
@@ -549,7 +584,7 @@ class PhpactorEditorActionUpdateFileSourceCommand(sublime_plugin.TextCommand):
 
 class PhpactorEditorActionOpenFileCommand(sublime_plugin.TextCommand):
     def run(self, edit, force_reload, path, offset, target):
-        self.view.window().run_command('tk_open_file', { 'file_path': path } )
+        self.view.window().run_command('tk_open_file_at_offset', { 'file_path': path, 'offset': offset } )
 
 class PhpactorEditorActionCloseFileCommand(sublime_plugin.TextCommand):
     def run(self, edit, path):
