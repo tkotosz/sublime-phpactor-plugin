@@ -405,6 +405,18 @@ class PhpactorNavigateCommand(sublime_plugin.TextCommand):
         # TODO tried to setup config for this but it always returns empty choice list
         self.view.run_command('phpactor_rpc', request)
 
+class PhpactorImportMissingClassesCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'import_missing_classes',
+            'parameters': {
+                'source': '@current_source',
+                'path': '@current_path'
+            }
+        }
+        # TODO tried to setup config for this but it always returns empty choice list
+        self.view.run_command('phpactor_rpc', request)
+
 class PhpactorClassSearchCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         keyword = self.get_current_word()
