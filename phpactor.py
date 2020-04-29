@@ -505,10 +505,6 @@ class PhpactorEditorActionFileReferencesCommand(sublime_plugin.TextCommand):
     def show_preview(self, index, files, window):
         window.run_command('tk_open_file_preview', { 'file_path': files[index] })
 
-class PhpactorEditorActionOpenFileCommand(sublime_plugin.TextCommand):
-    def run(self, edit, force_reload, path, offset, target):
-        self.view.window().run_command('tk_open_file_at_offset', { 'file_path': path, 'offset': offset } )
-
 class PhpactorEditorActionInputCallbackCommand(sublime_plugin.TextCommand):
     def run(self, edit, inputs, callback):    
         input = inputs.pop(0)
@@ -596,6 +592,10 @@ class PhpactorEditorActionUpdateFileSourceCommand(sublime_plugin.TextCommand):
 
 class PhpactorEditorActionOpenFileCommand(sublime_plugin.TextCommand):
     def run(self, edit, force_reload, path, offset, target):
+        # navigate command returns relative path for some reason
+        if path.find('/') != 0:
+            path = SublimeApi().get_working_dir(self.view) + '/' + path
+
         self.view.window().run_command('tk_open_file_at_offset', { 'file_path': path, 'offset': offset } )
 
 class PhpactorEditorActionCloseFileCommand(sublime_plugin.TextCommand):
