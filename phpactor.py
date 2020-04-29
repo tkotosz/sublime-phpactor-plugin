@@ -226,19 +226,6 @@ class PhpactorEchoCommand(sublime_plugin.TextCommand):
         }
         self.view.run_command('phpactor_rpc', request)
 
-class PhpactorReferencesCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        request = {
-            'action': 'references',
-            'parameters': {
-                'source': '@current_source',
-                'path': '@current_path',
-                'offset': '@current_offset'
-                #'filesystem': 'composer'
-            }
-        }
-        self.view.run_command('phpactor_rpc', request)
-
 class PhpactorGotoDefinitionCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         request = {
@@ -337,6 +324,16 @@ class PhpactorOffsetInfoCommand(sublime_plugin.TextCommand):
         }
         self.view.run_command('phpactor_rpc', request)
 
+class PhpactorClassNewCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'class_new',
+            'parameters': {
+                'current_path': '@current_path'
+            }
+        }
+        self.view.run_command('phpactor_rpc', request)
+
 class PhpactorClassInflectCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         request = {
@@ -347,12 +344,27 @@ class PhpactorClassInflectCommand(sublime_plugin.TextCommand):
         }
         self.view.run_command('phpactor_rpc', request)
 
-class PhpactorClassNewCommand(sublime_plugin.TextCommand):
+class PhpactorReferencesCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         request = {
-            'action': 'class_new',
+            'action': 'references',
             'parameters': {
-                'current_path': '@current_path'
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset'
+                #'filesystem': 'composer'
+            }
+        }
+        self.view.run_command('phpactor_rpc', request)
+
+class PhpactorExtractConstantCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'extract_constant',
+            'parameters': {
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset'
             }
         }
         self.view.run_command('phpactor_rpc', request)
