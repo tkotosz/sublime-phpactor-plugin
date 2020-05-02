@@ -254,6 +254,20 @@ class PhpactorGotoTypeCommand(sublime_plugin.TextCommand):
 
         self.view.run_command('phpactor_rpc', request)
 
+class PhpactorChangeVisibilityCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'change_visibility',
+            'parameters': {
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset'
+            }
+        }
+
+        self.view.run_command('phpactor_rpc', request)
+
+
 # { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "complete_constructor" } },
 # { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "add_missing_properties" } },
 # { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "fix_namespace_class_name" } },
