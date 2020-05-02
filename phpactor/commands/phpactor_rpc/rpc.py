@@ -19,8 +19,9 @@ class PhpactorRpcCommand(sublime_plugin.TextCommand):
         }
 
         for key in parameters:
-            for placeholder in replaceMap:
-                parameters[key] = parameters[key].replace('@'+placeholder, str(replaceMap[placeholder]))
+            if isinstance(parameters[key], str) or isinstance(parameters[key], int):
+                for placeholder in replaceMap:
+                    parameters[key] = str(parameters[key]).replace('@'+placeholder, str(replaceMap[placeholder]))
 
         for key in ['offset', 'offset_start', 'offset_end']:
             if key in parameters:

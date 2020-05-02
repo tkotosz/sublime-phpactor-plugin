@@ -6,6 +6,25 @@ def filename():
 def get_phpactor_bin():
     return get_setting('phpactor_bin')
 
+def get_command_setting(command_name, property, default=None):
+    command_settings = get_command_settings(command_name)
+
+    if not property in command_settings:
+        return default
+
+    return command_settings[property]
+
+def get_command_settings(command_name):
+    command_settings = get_setting('command_settings')
+
+    if not command_settings:
+        return []
+
+    if not command_name in command_settings:
+        return []
+
+    return command_settings[command_name]
+
 def get_setting(name, default=None):
     project_data = sublime.active_window().project_data()
 

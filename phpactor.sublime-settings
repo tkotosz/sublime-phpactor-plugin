@@ -1,3 +1,8 @@
 {
-    "phpactor_bin": "/home/tkotosz/Sites/phpactor/bin/phpactor"
+    "phpactor_bin": "/home/tkotosz/Sites/phpactor/bin/phpactor",
+    "command_settings": {
+        "references": {
+            "filesystem": "git"
+        }
+    }
 }
