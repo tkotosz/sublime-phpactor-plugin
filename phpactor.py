@@ -66,6 +66,14 @@ class SublimeApi:
         for region in view.sel():
             return region.begin()
 
+    def get_current_position_start(self, view):
+        for region in view.sel():
+            return region.begin()
+
+    def get_current_position_end(self, view):
+        for region in view.sel():
+            return region.end()
+
     def get_current_line(self, view):
         for region in view.sel():
             return view.substr(view.line(region))
@@ -203,6 +211,12 @@ class PhpactorRpcCommand(sublime_plugin.TextCommand):
         if 'offset' in parameters:
             parameters['offset'] = int(str(parameters['offset']).replace('@current_offset', str(self.sublime_api.get_current_position(self.view))))
 
+        if 'offset_start' in parameters:
+            parameters['offset_start'] = int(str(parameters['offset_start']).replace('@current_offset_start', str(self.sublime_api.get_current_position_start(self.view))))
+
+        if 'offset_end' in parameters:
+            parameters['offset_end'] = int(str(parameters['offset_end']).replace('@current_offset_end', str(self.sublime_api.get_current_position_end(self.view))))
+
         return Phpactor.Rpc.Request(action, parameters)
 
     def before_send(self, request):
@@ -249,19 +263,6 @@ class PhpactorGotoTypeCommand(sublime_plugin.TextCommand):
                 'path': '@current_path',
                 'offset': '@current_offset',
                 'target': 'focused_window'
-            }
-        }
-
-        self.view.run_command('phpactor_rpc', request)
-
-class PhpactorChangeVisibilityCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        request = {
-            'action': 'change_visibility',
-            'parameters': {
-                'source': '@current_source',
-                'path': '@current_path',
-                'offset': '@current_offset'
             }
         }
 
@@ -436,6 +437,32 @@ class PhpactorOverrideMethodCommand(sublime_plugin.TextCommand):
             'parameters': {
                 'source': '@current_source',
                 'path': '@current_path'
+            }
+        }
+        self.view.run_command('phpactor_rpc', request)
+
+class PhpactorChangeVisibilityCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'change_visibility',
+            'parameters': {
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset'
+            }
+        }
+
+        self.view.run_command('phpactor_rpc', request)
+
+class PhpactorExtractExpressionCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'extract_expression',
+            'parameters': {
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset_start': '@current_offset_start',
+                'offset_end': '@current_offset_end'
             }
         }
         self.view.run_command('phpactor_rpc', request)
