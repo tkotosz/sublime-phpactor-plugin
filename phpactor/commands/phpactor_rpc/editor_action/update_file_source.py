@@ -19,6 +19,8 @@ class PhpactorEditorActionUpdateFileSourceCommand(sublime_plugin.TextCommand):
             );
             return
 
+        # TODO if edits empty then call the old file content replace command?
+
         original_selections = [r for r in file_view.sel()]
         restore_original_position = False
         for e in edits:

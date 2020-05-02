@@ -20,5 +20,4 @@ class TkRunCommandWhenFileLoadedListener(sublime_plugin.EventListener):
             commands = queue[file_path]
             del TkRunCommandWhenFileLoaded.notify_queue[file_path]
             for command in commands:
-                print('calling', command)
                 view.run_command(command['command_name'], command['command_params'])
