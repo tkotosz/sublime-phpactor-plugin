@@ -15,17 +15,18 @@ def find_working_dir(view):
 
     return None # unsaved file & no folder open in the sidebar
 
-def log_rpc_request(self, request):
-    self.log('--> phpactor(rpc)', request.to_json())
+def log_rpc_request(request):
+    log('--> phpactor(rpc)', request.to_json())
 
-def log_rpc_response(self, response):
-    self.log('<-- phpactor(rpc)', response.to_json())
+def log_rpc_response(response):
+    log('<-- phpactor(rpc)', response.to_json())
 
-def log_rpc_error(self, error):
-    self.log('<-- phpactor(rpc)', error)
+def log_rpc_error(error):
+    log('<-- phpactor(rpc)', error)
 
-def log_editor_action(self, action):
-    self.log('--> sublime(editor-action)', action)
+def log_editor_action(action):
+    log('--> sublime(editor-action)', action)
 
-def log(self, *message):
+def log(*message):
     print("[SUBLIME-PHPACTOR]", *message)
+
