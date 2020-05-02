@@ -7,4 +7,4 @@ class PhpactorEditorActionOpenFileCommand(sublime_plugin.TextCommand):
         if path.find('/') != 0:
             path = tksublime.find_working_dir(view) + '/' + path
 
-        self.view.window().run_command('tk_open_file_at_offset', { 'file_path': path, 'offset': offset } )
+        self.view.run_command('tk_open_file_at_offset', { 'file_path': path, 'offset': offset } )
