@@ -4,8 +4,7 @@ def filename():
     return 'phpactor.sublime-settings'
 
 def get_phpactor_bin():
-    return '/home/tkotosz/Sites/phpactor/bin/phpactor' # TODO
-    #return get_setting('phpactor_bin')
+    return get_setting('phpactor_bin')
 
 def get_setting(name, default=None):
     project_data = sublime.active_window().project_data()
