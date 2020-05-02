@@ -492,6 +492,35 @@ class PhpactorRenameVariableCommand(sublime_plugin.TextCommand):
         }
         self.view.run_command('phpactor_rpc', request)
 
+class PhpactorGotoImplementationCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'goto_implementation',
+            'parameters': {
+                'source': '@current_source',
+                'path': '@current_path',
+                'offset': '@current_offset',
+                'target': 'focused_window'
+            }
+        }
+        self.view.run_command('phpactor_rpc', request)
+
+############################################################################
+# Internal Helper Commands (Currently Unused) [SUBLIME-PHPACTOR] -> Phpactor
+############################################################################
+
+class PhpactorFileInfoCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        request = {
+            'action': 'file_info',
+            'parameters': {
+                'path': '@current_path'
+            }
+        }
+
+        # TODO - This returns a "return" editor action which should be consumed directly then anything can done with it
+        self.view.run_command('phpactor_rpc', request)
+
 class PhpactorClassSearchCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         keyword = self.get_current_word()
@@ -506,7 +535,7 @@ class PhpactorClassSearchCommand(sublime_plugin.TextCommand):
             }
         }
 
-        # TODO this just returns a choice list, I don't know what to do with it yet
+        # TODO - This returns a "return_choice" editor action which should be consumed directly then anything can done with it
         self.view.run_command('phpactor_rpc', request)
 
     def get_current_word(self):
