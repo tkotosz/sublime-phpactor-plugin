@@ -11,10 +11,6 @@ class SublimeApi:
             self.get_working_dir(view)
         )
 
-    def apply_rpc_action(self, view, action_name, parameters):
-        self.log_editor_action({'name': action_name, 'parameters': parameters})
-        view.run_command('phpactor_editor_action_' + action_name, parameters)
-
     def insert_to_current_positions(self, view, edit, text):
         for region in view.sel():
             view.insert(edit, region.begin(), text)
@@ -224,11 +220,20 @@ class PhpactorRpcCommand(sublime_plugin.TextCommand):
 
     def on_error(self, err):
         self.sublime_api.log_rpc_error(err.message)
-        self.sublime_api.apply_rpc_action(self.view, 'error', { 'message': 'RPC request failed with unknown error (see logs)', 'details': err.message })
+        self.view.run_command('phpactor_dispatch_rpc_editor_action', { 'name': 'error', 'parameters': { 'message': 'RPC request failed with unknown error (see logs)', 'details': err.message  } })
 
     def on_done(self, response):
         self.sublime_api.log_rpc_response(response)
-        self.sublime_api.apply_rpc_action(self.view, response.action, response.parameters)
+        self.view.run_command('phpactor_dispatch_rpc_editor_action', { 'name': response.action, 'parameters': response.parameters })
+
+class PhpactorDispatchRpcEditorActionCommand(sublime_plugin.TextCommand):
+    def __init__(self, view):
+        super().__init__(view)
+        self.sublime_api = SublimeApi()
+
+    def run(self, edit, name, parameters):
+        self.sublime_api.log_editor_action({'name': name, 'parameters': parameters})
+        self.view.run_command('phpactor_editor_action_' + name, parameters)
 
 class PhpactorEchoCommand(sublime_plugin.TextCommand):
     def run(self, edit):
@@ -267,7 +272,6 @@ class PhpactorGotoTypeCommand(sublime_plugin.TextCommand):
         }
 
         self.view.run_command('phpactor_rpc', request)
-
 
 # { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "complete_constructor" } },
 # { "keys": ["<key>"], "command": "phpactor_transform", "args": { "transform": "add_missing_properties" } },
@@ -565,9 +569,8 @@ class PhpactorEditorActionErrorCommand(sublime_plugin.TextCommand):
 
 class PhpactorEditorActionCollectionCommand(sublime_plugin.TextCommand):
     def run(self, edit, actions):
-        sublimeApi = SublimeApi()
         for action in actions:
-            sublimeApi.apply_rpc_action(self.view, action['name'], action['parameters'])
+            self.view.run_command('phpactor_dispatch_rpc_editor_action', action)
 
 class PhpactorEditorActionFileReferencesCommand(sublime_plugin.TextCommand):
     def __init__(self, view):
@@ -713,7 +716,6 @@ class PhpactorEditorActionInformationCommand(sublime_plugin.TextCommand):
         debug_view.insert(edit, 0, information)
         self.view.window().run_command('show_panel', { 'panel': 'output.phpactor_information' })
 
-        
 
 ###########################
 # Reusable Sublime Commands
