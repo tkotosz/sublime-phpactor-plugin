@@ -54,5 +54,5 @@ from .phpactor_plugin.phpactor.commands.tk_open_file import TkOpenFileCommand
 from .phpactor_plugin.phpactor.commands.tk_close_file import TkCloseFileCommand
 from .phpactor_plugin.phpactor.commands.tk_open_file_preview import TkOpenFilePreviewCommand
 from .phpactor_plugin.phpactor.commands.tk_open_file_at_offset import TkOpenFileAtOffsetCommand
-from .phpactor_plugin.phpactor.commands.tk_jump_to_offset import TkJumpToOffsetCommand
+from .phpactor_plugin.phpactor.commands.tk_jump_to_offset import TkJumpToOffsetCommand,TkJumpToOffsetFileOpenedEventListener
 from .phpactor_plugin.phpactor.commands.tk_replace_file_content import TkReplaceFileContentCommand
