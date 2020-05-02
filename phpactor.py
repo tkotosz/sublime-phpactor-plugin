@@ -56,3 +56,4 @@ from .phpactor_plugin.phpactor.commands.tk_open_file_preview import TkOpenFilePr
 from .phpactor_plugin.phpactor.commands.tk_open_file_at_offset import TkOpenFileAtOffsetCommand
 from .phpactor_plugin.phpactor.commands.tk_jump_to_offset import TkJumpToOffsetCommand,TkJumpToOffsetFileOpenedEventListener
 from .phpactor_plugin.phpactor.commands.tk_replace_file_content import TkReplaceFileContentCommand
+from .phpactor_plugin.phpactor.commands.tk_run_command_when_file_loaded import TkRunCommandWhenFileLoaded,TkRunCommandWhenFileLoadedListener
