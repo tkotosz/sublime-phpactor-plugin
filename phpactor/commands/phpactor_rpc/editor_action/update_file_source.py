@@ -31,19 +31,12 @@ class PhpactorEditorActionUpdateFileSourceCommand(sublime_plugin.TextCommand):
 
             if e['text'] == '' and self.contains_the_cursor(file_view, region): # deleting some lines
                 restore_original_position = True
-            
+
             file_view.replace(edit, region, content)
 
         if restore_original_position:
             file_view.sel().clear()
             file_view.sel().add_all(original_selections)
-
-    def get_file_view(self, path):
-        if self.view.file_name() == path:
-            return self.view
-
-        self.view.window().run_command('tk_open_file', { 'file_path': path })
-        return self.view.window().find_open_file(path)
 
     def contains_the_cursor(self, file_view, edit_region):
         for region in file_view.sel():
