@@ -45,6 +45,7 @@ from .phpactor_plugin.phpactor.commands.phpactor_rpc.editor_action.update_file_s
 from .phpactor_plugin.phpactor.commands.phpactor_rpc.editor_action.open_file import PhpactorEditorActionOpenFileCommand
 from .phpactor_plugin.phpactor.commands.phpactor_rpc.editor_action.close_file import PhpactorEditorActionCloseFileCommand
 from .phpactor_plugin.phpactor.commands.phpactor_rpc.editor_action.information import PhpactorEditorActionInformationCommand
+from .phpactor_plugin.phpactor.commands.phpactor_rpc.editor_action.replace_file_source import PhpactorEditorActionReplaceFileSourceCommand
 
 ############################
 # General Sublime Commands #

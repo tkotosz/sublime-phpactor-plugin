@@ -9,6 +9,18 @@ class PhpactorEditorActionInputCallbackCommand(sublime_plugin.TextCommand):
         if len(inputs) > 0: # we have more inputs
             next = lambda callback: self.view.run_command('phpactor_editor_action_input_callback', { 'inputs': inputs, 'callback': callback })
 
+        if callback['action'] == 'context_menu':
+            items = []
+
+            for item in input['parameters']['choices']:
+                items.append(item)
+
+            self.view.show_popup_menu(
+                items,
+                lambda index: self.select_item(index, items, input['name'], False, callback, next)
+            )
+            return;
+
         if input['type'] == 'list':
             items = []
 
