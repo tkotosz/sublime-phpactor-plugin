@@ -3,12 +3,8 @@ import sublime_plugin
 
 class PhpactorEditorActionUpdateFileSourceCommand(sublime_plugin.TextCommand):
     def run(self, edit, path, edits, source):
-        file_view = self.get_file_view(path)
-
-        if not file_view:
-            return
-
-        if file_view.is_loading(): # we need to wait, the file was not open already
+        if self.view.file_name() != path:
+            self.view.window().open_file(path, sublime.ENCODED_POSITION | sublime.FORCE_GROUP, self.view.window().active_group())
             self.view.window().run_command(
                 'tk_run_command_when_file_loaded',
                 {
@@ -18,8 +14,12 @@ class PhpactorEditorActionUpdateFileSourceCommand(sublime_plugin.TextCommand):
                 }
             );
             return
+        
+        file_view = self.view
 
-        # TODO if edits empty then call the old file content replace command?
+        if not edits: # if no edits returned then apply the changed source (- fix for Replace References)
+            file_view.replace(edit, sublime.Region(0, file_view.size()), source)
+            return
 
         original_selections = [r for r in file_view.sel()]
         restore_original_position = False
@@ -31,7 +31,7 @@ class PhpactorEditorActionUpdateFileSourceCommand(sublime_plugin.TextCommand):
 
             if e['text'] == '' and self.contains_the_cursor(file_view, region): # deleting some lines
                 restore_original_position = True
-
+            
             file_view.replace(edit, region, content)
 
         if restore_original_position:
