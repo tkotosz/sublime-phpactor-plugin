@@ -1,7 +1,3 @@
-# sublime-phpactor-plugin
-
-Available commands in the command palette (CTRL+P):
-```
 [
   { "caption": "Phpactor: Status", "command": "phpactor_echo", "args": { "message": "Phpactor Status: OK" } },
   { "caption": "Phpactor: Offset Info", "command": "phpactor_offset_info" },
@@ -31,28 +27,3 @@ Available commands in the command palette (CTRL+P):
   { "caption": "Phpactor: Class New", "command": "phpactor_class_new" },
   { "caption": "Phpactor: Class Inflect", "command": "phpactor_class_inflect" },
 ]
-```
-
-You can bind any of these commands to key-combination in the sublime-keymap config (Preferences > Key Bindings).
-For example to show the phpactor's context menu on "alt+enter":
-```
-{ "keys": ["alt+enter"], "command": "phpactor_context_menu" }
-```
-Another example to run phpactor's goto definition on "F12":
-```
-{ "keys": ["f12"], "command": "phpactor_goto_definition" }
-```
-
-You can also bind commands to mouse actions in the sublime-mousemap config (not available in the menu, need to manually create a "Default (Linux).sublime-mousemap" file).
-For example to run the phpactor's goto definition command on "ctrl+leftmousebuttonclick":
-```
-[
-    {
-        "button": "button1", 
-        "count": 1, 
-        "modifiers": ["ctrl"],
-        "press_command": "drag_select",
-        "command": "phpactor_goto_definition"
-    }
-]
-```
