@@ -16,7 +16,7 @@ from .phpactor_plugin.phpactor.commands.phpactor_rpc.class_inflect import Phpact
 from .phpactor_plugin.phpactor.commands.phpactor_rpc.references import PhpactorReferencesCommand
 from .phpactor_plugin.phpactor.commands.phpactor_rpc.extract_constant import PhpactorExtractConstantCommand
 from .phpactor_plugin.phpactor.commands.phpactor_rpc.generate_method import PhpactorGenerateMethodCommand
-from .phpactor_plugin.phpactor.commands.phpactor_rpc.generate_accessors import PhpactorGenerateAccessorsCommand
+from .phpactor_plugin.phpactor.commands.phpactor_rpc.generate_accessor import PhpactorGenerateAccessorCommand
 from .phpactor_plugin.phpactor.commands.phpactor_rpc.context_menu import PhpactorContextMenuCommand
 from .phpactor_plugin.phpactor.commands.phpactor_rpc.navigate import PhpactorNavigateCommand
 from .phpactor_plugin.phpactor.commands.phpactor_rpc.import_missing_classes import PhpactorImportMissingClassesCommand

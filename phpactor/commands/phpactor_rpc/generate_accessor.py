@@ -1,6 +1,6 @@
 import sublime_plugin
 
-class PhpactorGenerateAccessorsCommand(sublime_plugin.TextCommand):
+class PhpactorGenerateAccessorCommand(sublime_plugin.TextCommand):
     def run(self, edit, names=None):
         request = {
             'action': 'generate_accessor',
