@@ -1,7 +1,7 @@
 import sublime
 
 def filename():
-    return 'phpactor.sublime-settings'
+    return 'Phpactor.sublime-settings'
 
 def get_phpactor_bin():
     return get_setting('phpactor_bin')
@@ -35,5 +35,5 @@ def get_setting(name, default=None):
 
     if (project_data and 'phpactor' in project_data and name in project_data['phpactor']):
         return project_data['phpactor'][name]
-
+    
     return sublime.load_settings(filename()).get(name, default)
