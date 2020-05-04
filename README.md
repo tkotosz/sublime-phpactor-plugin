@@ -1,5 +1,7 @@
 # sublime-phpactor-plugin
 
+## General information
+
 Available commands in the command palette (CTRL+P):
 ```
 [
@@ -56,3 +58,38 @@ For example to run the phpactor's goto definition command on "ctrl+leftmousebutt
     }
 ]
 ```
+
+## How to install the plugin?
+
+Since it is not yet published in the sublime package control repository you can install it in the following way:
+1. Open the Command Palette (CTRL+P) and run the "Package Control: Add Repository" command and provide this: https://github.com/tkotosz/sublime-phpactor-plugin
+2. You should see a message on the status bar (bottom left corner) saying repository added successfully
+3. Open the Command Palette (CTRL+P) and run the "Package Control: Install Package" command and choose sublime-phpactor-plugin (it shows up with that name since it uses the repo name by default - it will have a proper name once published in the package control repo)
+4. You are done, the plugin installed
+
+After installation:
+The plugin uses /usr/local/bin/phpactor by default to find phpactor, if your phpactor is installed to a different location then you can specify the location in the package config here: `Preferences > Package Settings > Phpactor > Settings - User`: You can find the default config at `Preferences > Package Settings > Phpactor > Settings - Default`. Your user config should look like this:
+```
+{
+    "phpactor_bin": "/absolute/path/to/bin/phpactor"
+}
+```
+All phpactor command available in the command palette, also can be binded to keys, see readme here: https://github.com/tkotosz/sublime-phpactor-plugin
+
+Now you are good to go but worth to note 2 things:
+
+1. By default the "Find References" command uses git mode, but you can switch to composer mode (warning: much slower) - the later one will discover references in vendor as well. You can change the mode in the package setting like this:
+```
+{
+    "phpactor_bin": "/absolute/path/to/bin/phpactor",
+    "command_settings": {
+        "references": {
+            "filesystem": "git"
+        }
+    }
+}
+```
+where filesystem can be "git" or "composer".
+
+2. The goto implementation command requires indexing so if you would like to use that command then don't forget to start the phpactor indexer like this:
+`bin/phpactor index:build --watch --working-dir=/absolute/path/to/your/project/dir`
