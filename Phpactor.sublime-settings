@@ -1,5 +1,5 @@
 {
-    "phpactor_bin": "/home/tkotosz/Sites/phpactor/bin/phpactor",
+    "phpactor_bin": "/usr/local/bin/phpactor",
     "command_settings": {
         "references": {
             "filesystem": "git"
