@@ -4,5 +4,11 @@
         "id": "phpactor_sidebar_class_new",
         "command": "phpactor_sidebar_class_new",
         "args": {"dirs": []}
+    },
+    {
+        "caption": "Copy PHP Class",
+        "id": "phpactor_sidebar_copy_class",
+        "command": "phpactor_sidebar_copy_class",
+        "args": {"files": []}
     }
 ]

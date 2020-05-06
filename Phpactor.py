@@ -61,3 +61,4 @@ from .modules.commands.tk_run_command_when_file_loaded import TkRunCommandWhenFi
 # Sublime Sidebar Commands #
 ############################
 from .modules.commands.sidebar.class_new import PhpactorSidebarClassNewCommand
+from .modules.commands.sidebar.copy_class import PhpactorSidebarCopyClassCommand
