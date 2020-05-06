@@ -15,7 +15,8 @@ class PhpactorRpcCommand(sublime_plugin.TextCommand):
             'current_path': self.get_current_file_path(),
             'current_offset': self.get_current_position(),
             'current_offset_start': self.get_current_position_start(),
-            'current_offset_end': self.get_current_position_end()
+            'current_offset_end': self.get_current_position_end(),
+            'current_language': self.get_current_language()
         }
 
         for key in parameters:
@@ -57,6 +58,18 @@ class PhpactorRpcCommand(sublime_plugin.TextCommand):
             return file_path
 
         return "" # unsaved file
+
+    def get_current_language(self):
+        syntax = self.view.settings().get('syntax')
+        language = syntax.rsplit("/", 1)[-1].split('.', 1)[0].lower()
+
+        # Behat feature files are special they can have
+        # "Gherkin", "Cucumber", "Behat", "Behat-Features" syntax depending on which syntax package is used
+        # "gherkin", "cucumber" and "behat" are recognised by phpactor but "behat-features" is not
+        if language == 'behat-features':
+            language = 'gherkin'
+
+        return language
 
     def before_send(self, request):
         log_rpc_request(request)

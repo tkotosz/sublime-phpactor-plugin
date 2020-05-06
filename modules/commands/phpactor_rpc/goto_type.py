@@ -8,7 +8,8 @@ class PhpactorGotoTypeCommand(sublime_plugin.TextCommand):
                 'source': '@current_source',
                 'path': '@current_path',
                 'offset': '@current_offset',
-                'target': 'focused_window'
+                'target': 'focused_window',
+                'language': '@current_language'
             }
         }
 

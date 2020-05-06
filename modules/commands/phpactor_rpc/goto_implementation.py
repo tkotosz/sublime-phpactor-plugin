@@ -8,7 +8,8 @@ class PhpactorGotoImplementationCommand(sublime_plugin.TextCommand):
                 'source': '@current_source',
                 'path': '@current_path',
                 'offset': '@current_offset',
-                'target': 'focused_window'
+                'target': 'focused_window',
+                'language': '@current_language'
             }
         }
         self.view.run_command('phpactor_rpc', request)
