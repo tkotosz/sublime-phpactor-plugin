@@ -10,7 +10,7 @@ class PhpactorEditorActionReplaceFileSourceCommand(sublime_plugin.TextCommand):
                 {
                     'file_path': path,
                     'command_name': 'phpactor_editor_action_replace_file_source',
-                    'command_params': { 'path': path, 'edits': edits, 'source': source }
+                    'command_params': { 'path': path, 'source': source }
                 }
             );
             return
