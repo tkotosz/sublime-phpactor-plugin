@@ -13,6 +13,18 @@ class Phpactor:
                 self.action = action
                 self.parameters = parameters
 
+            def path(self):
+                if 'path' in self.parameters:
+                    return self.parameters['path']
+
+                if 'current_path' in self.parameters:
+                    return self.parameters['current_path']
+
+                if 'source_path' in self.parameters:
+                    return self.parameters['source_path']
+
+                return None
+
             def to_json(self):
                 return json.dumps({'action': self.action, 'parameters': self.parameters}, sort_keys=True)
 

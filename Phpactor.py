@@ -56,3 +56,8 @@ from .modules.commands.tk_close_file import TkCloseFileCommand
 from .modules.commands.tk_open_file_preview import TkOpenFilePreviewCommand
 from .modules.commands.tk_open_file_at_offset import TkOpenFileAtOffsetCommand
 from .modules.commands.tk_run_command_when_file_loaded import TkRunCommandWhenFileLoaded,TkRunCommandWhenFileLoadedListener
+
+############################
+# Sublime Sidebar Commands #
+############################
+from .modules.commands.sidebar.class_new import PhpactorSidebarClassNewCommand

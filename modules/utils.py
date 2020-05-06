@@ -1,7 +1,7 @@
 import os
 
-def find_working_dir(view):
-    current_file_path = view.file_name()
+def find_working_dir(view, current_file_path):
+    # current_file_path = view.file_name()
 
     if current_file_path:
         for folder in view.window().folders():

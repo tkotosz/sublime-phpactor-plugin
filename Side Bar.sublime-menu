@@ -1,0 +1,8 @@
+[
+    {
+        "caption": "New PHP Class",
+        "id": "phpactor_sidebar_class_new",
+        "command": "phpactor_sidebar_class_new",
+        "args": {"dirs": []}
+    }
+]

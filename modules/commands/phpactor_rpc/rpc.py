@@ -6,7 +6,8 @@ from ...settings import *
 
 class PhpactorRpcCommand(sublime_plugin.TextCommand):
     def run(self, edit, action, parameters):
-        phpactor = Phpactor(self.get_phpactor_settings())
+        rpcRequest = self.build_rpc_request(action, parameters)
+        phpactor = Phpactor(Phpactor.Settings(get_phpactor_bin(), find_working_dir(self.view, rpcRequest.path())))
         phpactor.send_rpc_request(self.build_rpc_request(action, parameters), self.before_send, self.on_error, self.on_done)
 
     def build_rpc_request(self, action, parameters):
@@ -29,12 +30,6 @@ class PhpactorRpcCommand(sublime_plugin.TextCommand):
                 parameters[key] = int(parameters[key])
 
         return Phpactor.Rpc.Request(action, parameters)
-
-    def get_phpactor_settings(self):
-        return Phpactor.Settings(
-            get_phpactor_bin(),
-            find_working_dir(self.view)
-        )
 
     def get_current_position(self):
         for region in self.view.sel():
