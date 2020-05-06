@@ -10,5 +10,11 @@
         "id": "phpactor_sidebar_copy_class",
         "command": "phpactor_sidebar_copy_class",
         "args": {"files": []}
+    },
+    {
+        "caption": "Move PHP Class",
+        "id": "phpactor_sidebar_move_class",
+        "command": "phpactor_sidebar_move_class",
+        "args": {"files": []}
     }
 ]
