@@ -44,6 +44,25 @@ def get_sidebar_menu_settings(sidebar_option_name):
 
     return sidebar_menu_settings[sidebar_option_name]
 
+def get_tab_context_menu_setting(tab_context_option_name, property, default=None):
+    tab_context_menu_settings = get_tab_context_menu_settings(tab_context_option_name)
+
+    if not property in tab_context_menu_settings:
+        return default
+
+    return tab_context_menu_settings[property]
+
+def get_tab_context_menu_settings(tab_context_option_name):
+    tab_context_menu_settings = get_setting('tab_context_menu_settings')
+
+    if not tab_context_menu_settings:
+        return []
+
+    if not tab_context_option_name in tab_context_menu_settings:
+        return []
+
+    return tab_context_menu_settings[tab_context_option_name]
+
 def get_setting(name, default=None):
     project_data = sublime.active_window().project_data()
 

@@ -1,0 +1,28 @@
+[
+    {
+        "caption": "-",
+        "id": "phpactor_tab_context_separator_0"
+    },
+    {
+        "caption": "Copy Absolute Path",
+        "id": "phpactor_tab_context_copy_absolute_path",
+        "command": "phpactor_tab_context_copy_absolute_path",
+        "args": { "group": -1, "index": -1 }
+    },
+    {
+        "caption": "Copy Relative Path",
+        "id": "phpactor_tab_context_copy_relative_path",
+        "command": "phpactor_tab_context_copy_relative_path",
+        "args": { "group": -1, "index": -1 }
+    },
+    {
+        "caption": "-",
+        "id": "phpactor_tab_context_separator_1"
+    },
+    {
+        "caption": "Reveal in sidebar",
+        "id": "phpactor_tab_context_reveal_in_side_bar",
+        "command": "phpactor_tab_context_reveal_in_side_bar",
+        "args": { "group": -1, "index": -1 }
+    }
+]

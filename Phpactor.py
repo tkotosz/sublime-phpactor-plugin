@@ -66,3 +66,10 @@ from .modules.commands.sidebar.move_class import PhpactorSidebarMoveClassCommand
 from .modules.commands.sidebar.class_inflect import PhpactorSidebarClassInflectCommand
 from .modules.commands.sidebar.copy_absolute_path import PhpactorSidebarCopyAbsolutePathCommand
 from .modules.commands.sidebar.copy_relative_path import PhpactorSidebarCopyRelativePathCommand
+
+################################
+# Sublime Tab Context Commands #
+################################
+from .modules.commands.tab_context.reveal_in_side_bar import PhpactorTabContextRevealInSideBarCommand
+from .modules.commands.tab_context.copy_absolute_path import PhpactorTabContextCopyAbsolutePathCommand
+from .modules.commands.tab_context.copy_relative_path import PhpactorTabContextCopyRelativePathCommand
