@@ -6,7 +6,8 @@ class PhpactorSidebarClassNewCommand(sublime_plugin.WindowCommand):
         request = {
             'action': 'class_new',
             'parameters': {
-                'current_path': dirs[0] + '/'
+                'current_path': dirs[0] + '/' + 'NewClass.php',
+                'variant': 'default'
             }
         }
         self.window.active_view().run_command('phpactor_rpc', request)

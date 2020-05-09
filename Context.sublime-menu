@@ -12,5 +12,10 @@
         "caption": "Copy Relative Path",
         "id": "phpactor_context_copy_relative_path",
         "command": "phpactor_context_copy_relative_path"
+    },
+    {
+        "caption": "Copy Class Reference",
+        "id": "phpactor_context_copy_class_reference",
+        "command": "phpactor_context_copy_class_reference"
     }
 ]

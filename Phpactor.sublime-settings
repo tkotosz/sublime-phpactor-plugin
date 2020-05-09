@@ -42,6 +42,9 @@
         },
         "copy_relative_path": {
             "enabled": true
+        },
+        "copy_class_reference": {
+            "enabled": true
         }
     }
 }
