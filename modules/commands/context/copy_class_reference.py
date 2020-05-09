@@ -10,15 +10,16 @@ class PhpactorContextCopyClassReferenceCommand(sublime_plugin.WindowCommand):
         file_name = file_absolute_path.rsplit('/', 1)[-1].split('.', 1)[0]
         phpactor = Phpactor(self.window)
         rpcRequest = Phpactor.Rpc.Request('class_search', { 'short_name': file_name })
-        response = phpactor.send_rpc_request(rpcRequest)
+        result = phpactor.send_rpc_request(rpcRequest)
 
-        if 'class' in response: # single match found
-            sublime.set_clipboard(response['class'])
+        if 'class' in result: # single match found
+            sublime.set_clipboard(result['class'])
             return
 
-        for choice in response: # multiple matches found
-            if choice['value']['file_path'] == file_absolute_path:
-                sublime.set_clipboard(choice['value']['class'])
+
+        for key, item in result.items(): # multiple matches found
+            if item['file_path'] == file_absolute_path:
+                sublime.set_clipboard(item['class'])
                 return
 
     def is_visible(self):

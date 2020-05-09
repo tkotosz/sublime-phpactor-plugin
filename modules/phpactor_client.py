@@ -71,7 +71,12 @@ class Phpactor:
             return response.parameters['value']
 
         if response.action == 'return_choice':
-            return response.parameters['choices']  # TODO
+            result = {}
+
+            for choice in response.parameters['choices']:
+                result[choice['name']] = choice['value'];
+
+            return result
 
         self.window.active_view().run_command('phpactor_dispatch_rpc_editor_action', { 'name': response.action, 'parameters': response.parameters })
         return None
