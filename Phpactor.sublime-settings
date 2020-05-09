@@ -32,5 +32,13 @@
         "copy_relative_path": {
             "enabled": true
         }
+    },
+    "context_menu_settings": {
+        "copy_absolute_path": {
+            "enabled": true
+        },
+        "copy_relative_path": {
+            "enabled": true
+        }
     }
 }

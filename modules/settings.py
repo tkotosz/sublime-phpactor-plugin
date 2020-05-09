@@ -63,6 +63,25 @@ def get_tab_context_menu_settings(tab_context_option_name):
 
     return tab_context_menu_settings[tab_context_option_name]
 
+def get_context_menu_setting(context_option_name, property, default=None):
+    context_menu_settings = get_context_menu_settings(context_option_name)
+
+    if not property in context_menu_settings:
+        return default
+
+    return context_menu_settings[property]
+
+def get_context_menu_settings(context_option_name):
+    context_menu_settings = get_setting('context_menu_settings')
+
+    if not context_menu_settings:
+        return []
+
+    if not context_option_name in context_menu_settings:
+        return []
+
+    return context_menu_settings[context_option_name]
+
 def get_setting(name, default=None):
     project_data = sublime.active_window().project_data()
 

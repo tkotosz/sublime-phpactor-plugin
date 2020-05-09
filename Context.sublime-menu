@@ -1,0 +1,16 @@
+[
+    {
+        "caption": "-",
+        "id": "phpactor_context_separator_0"
+    },
+    {
+        "caption": "Copy Absolute Path",
+        "id": "phpactor_context_copy_absolute_path",
+        "command": "phpactor_context_copy_absolute_path"
+    },
+    {
+        "caption": "Copy Relative Path",
+        "id": "phpactor_context_copy_relative_path",
+        "command": "phpactor_context_copy_relative_path"
+    }
+]

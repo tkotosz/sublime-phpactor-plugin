@@ -57,9 +57,9 @@ from .modules.commands.tk_open_file_preview import TkOpenFilePreviewCommand
 from .modules.commands.tk_open_file_at_offset import TkOpenFileAtOffsetCommand
 from .modules.commands.tk_run_command_when_file_loaded import TkRunCommandWhenFileLoaded,TkRunCommandWhenFileLoadedListener
 
-############################
-# Sublime Sidebar Commands #
-############################
+#################################
+# Sublime Sidebar Menu Commands #
+#################################
 from .modules.commands.sidebar.class_new import PhpactorSidebarClassNewCommand
 from .modules.commands.sidebar.copy_class import PhpactorSidebarCopyClassCommand
 from .modules.commands.sidebar.move_class import PhpactorSidebarMoveClassCommand
@@ -67,9 +67,15 @@ from .modules.commands.sidebar.class_inflect import PhpactorSidebarClassInflectC
 from .modules.commands.sidebar.copy_absolute_path import PhpactorSidebarCopyAbsolutePathCommand
 from .modules.commands.sidebar.copy_relative_path import PhpactorSidebarCopyRelativePathCommand
 
-################################
-# Sublime Tab Context Commands #
-################################
+#####################################
+# Sublime Tab Context Menu Commands #
+#####################################
 from .modules.commands.tab_context.reveal_in_side_bar import PhpactorTabContextRevealInSideBarCommand
 from .modules.commands.tab_context.copy_absolute_path import PhpactorTabContextCopyAbsolutePathCommand
 from .modules.commands.tab_context.copy_relative_path import PhpactorTabContextCopyRelativePathCommand
+
+#################################
+# Sublime Context Menu Commands #
+#################################
+from .modules.commands.context.copy_absolute_path import PhpactorContextCopyAbsolutePathCommand
+from .modules.commands.context.copy_relative_path import PhpactorContextCopyRelativePathCommand
