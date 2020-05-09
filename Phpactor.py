@@ -64,3 +64,5 @@ from .modules.commands.sidebar.class_new import PhpactorSidebarClassNewCommand
 from .modules.commands.sidebar.copy_class import PhpactorSidebarCopyClassCommand
 from .modules.commands.sidebar.move_class import PhpactorSidebarMoveClassCommand
 from .modules.commands.sidebar.class_inflect import PhpactorSidebarClassInflectCommand
+from .modules.commands.sidebar.copy_absolute_path import PhpactorSidebarCopyAbsolutePathCommand
+from .modules.commands.sidebar.copy_relative_path import PhpactorSidebarCopyRelativePathCommand

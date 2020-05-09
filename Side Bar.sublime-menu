@@ -10,7 +10,7 @@
         "args": {"dirs": []}
     },
     {
-        "caption": "Copy PHP Class",
+        "caption": "Copy/Duplicate PHP Class",
         "id": "phpactor_sidebar_copy_class",
         "command": "phpactor_sidebar_copy_class",
         "args": {"files": []}
@@ -25,6 +25,22 @@
         "caption": "Inflect PHP Class",
         "id": "phpactor_sidebar_class_inflect",
         "command": "phpactor_sidebar_class_inflect",
+        "args": {"files": []}
+    },
+    {
+        "caption": "-",
+        "id": "phpactor_sidebar_separator_0"
+    },
+    {
+        "caption": "Copy Absolute Path",
+        "id": "phpactor_sidebar_copy_absolute_path",
+        "command": "phpactor_sidebar_copy_absolute_path",
+        "args": {"files": []}
+    },
+    {
+        "caption": "Copy Relative Path",
+        "id": "phpactor_sidebar_copy_relative_path",
+        "command": "phpactor_sidebar_copy_relative_path",
         "args": {"files": []}
     }
 ]

@@ -17,6 +17,9 @@
         },
         "inflect_php_class": {
             "enabled": true
+        },
+        "copy_absolute_path": {
+            "enabled": true
         }
     }
 }

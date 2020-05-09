@@ -15,7 +15,7 @@ class PhpactorEditorActionFileReferencesCommand(sublime_plugin.TextCommand):
                 pos = ":" + str(line_reference['line_no']) + ":" + str(line_reference['col_no'] + 1) # col starts from 1 in sublime, api returns from 0
                 file_name = os.path.basename(file_reference['file'])
                 file_absolute_path = file_reference['file']
-                file_relative_path = file_absolute_path.replace(find_working_dir(self.view, self.view.file_name()) + '/', '')
+                file_relative_path = file_absolute_path.replace(find_working_dir(self.view.window(), self.view.file_name()) + '/', '')
                 files.append(file_absolute_path + pos);
                 options.append([file_name + pos, file_relative_path + pos])
         

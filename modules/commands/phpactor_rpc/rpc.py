@@ -7,7 +7,7 @@ from ...settings import *
 class PhpactorRpcCommand(sublime_plugin.TextCommand):
     def run(self, edit, action, parameters):
         rpcRequest = self.build_rpc_request(action, parameters)
-        phpactor = Phpactor(Phpactor.Settings(get_phpactor_bin(), find_working_dir(self.view, rpcRequest.path())))
+        phpactor = Phpactor(Phpactor.Settings(get_phpactor_bin(), find_working_dir(self.view.window(), rpcRequest.path())))
         phpactor.send_rpc_request(self.build_rpc_request(action, parameters), self.before_send, self.on_error, self.on_done)
 
     def build_rpc_request(self, action, parameters):
