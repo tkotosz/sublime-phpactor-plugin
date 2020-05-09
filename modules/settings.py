@@ -25,6 +25,25 @@ def get_command_settings(command_name):
 
     return command_settings[command_name]
 
+def get_sidebar_menu_setting(sidebar_option_name, property, default=None):
+    sidebar_menu_settings = get_sidebar_menu_settings(sidebar_option_name)
+
+    if not property in sidebar_menu_settings:
+        return default
+
+    return sidebar_menu_settings[property]
+
+def get_sidebar_menu_settings(sidebar_option_name):
+    sidebar_menu_settings = get_setting('sidebar_menu_settings')
+
+    if not sidebar_menu_settings:
+        return []
+
+    if not sidebar_option_name in sidebar_menu_settings:
+        return []
+
+    return sidebar_menu_settings[sidebar_option_name]
+
 def get_setting(name, default=None):
     project_data = sublime.active_window().project_data()
 

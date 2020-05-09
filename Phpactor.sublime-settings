@@ -4,5 +4,19 @@
         "references": {
             "filesystem": "git"
         }
+    },
+    "sidebar_menu_settings": {
+        "new_php_class": {
+            "enabled": true
+        },
+        "copy_php_class": {
+            "enabled": true
+        },
+        "move_php_class": {
+            "enabled": true
+        },
+        "inflect_php_class": {
+            "enabled": true
+        }
     }
 }

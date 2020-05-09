@@ -1,5 +1,9 @@
 [
     {
+        "caption": "-",
+        "id": "phpactor_sidebar_separator_0"
+    },
+    {
         "caption": "New PHP Class",
         "id": "phpactor_sidebar_class_new",
         "command": "phpactor_sidebar_class_new",
@@ -12,7 +16,7 @@
         "args": {"files": []}
     },
     {
-        "caption": "Move PHP Class",
+        "caption": "Rename/Move PHP Class",
         "id": "phpactor_sidebar_move_class",
         "command": "phpactor_sidebar_move_class",
         "args": {"files": []}
