@@ -1,12 +1,15 @@
 import os
 
-def find_working_dir(window, current_file_path):
-    if current_file_path:
+def find_working_dir(window, file_path):
+    if not file_path: # if current path is not provided then lets use the path of the file in the active view
+        file_path = window.active_view().file_name()
+
+    if file_path:
         for folder in window.folders():
-            if current_file_path.find(folder) == 0:
+            if file_path.find(folder) == 0:
                 return folder # root folder of the file must be the "project" root
 
-        return os.path.dirname(current_file_path) # single file opened in sublime, lets use it's folder as working dir
+        return os.path.dirname(file_path) # single file opened in sublime, lets use it's folder as working dir
     else: # unsaved file
         for folder in window.folders():
             return folder # assume that it belongs to the first folder
