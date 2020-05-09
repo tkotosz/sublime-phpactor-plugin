@@ -80,3 +80,8 @@ from .modules.commands.tab_context.copy_relative_path import PhpactorTabContextC
 from .modules.commands.context.copy_absolute_path import PhpactorContextCopyAbsolutePathCommand
 from .modules.commands.context.copy_relative_path import PhpactorContextCopyRelativePathCommand
 from .modules.commands.context.copy_class_reference import PhpactorContextCopyClassReferenceCommand
+
+######################################
+# Phpactor RPC based auto-completion #
+######################################
+from .modules.commands.phpactor_rpc.complete import PhpactorComplete

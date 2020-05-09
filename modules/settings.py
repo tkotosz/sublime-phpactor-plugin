@@ -1,8 +1,5 @@
 import sublime
 
-def filename():
-    return 'Phpactor.sublime-settings'
-
 def get_phpactor_bin():
     return get_setting('phpactor_bin')
 
@@ -83,14 +80,24 @@ def get_context_menu_settings(context_option_name):
     return context_menu_settings[context_option_name]
 
 def get_setting(name, default=None):
-    project_data = sublime.active_window().project_data()
-
-    # setting in run time
+    # default sublime setting
     view_setting = sublime.active_window().active_view().settings().get(name, None)
     if view_setting != None:
         return view_setting
 
-    if (project_data and 'phpactor' in project_data and name in project_data['phpactor']):
-        return project_data['phpactor'][name]
-    
-    return sublime.load_settings(filename()).get(name, default)
+    user_settings = sublime.load_settings('Phpactor.sublime-settings').get(name)
+    default_settings = sublime.load_settings('Phpactor-default.sublime-settings').get(name)
+    current_settings = merge_settings(default_settings, user_settings)
+
+    if not current_settings:
+        return default
+
+    return current_settings
+
+def merge_settings(default_settings, user_settings):
+    if not isinstance(default_settings, dict): # sublime only merges dicts incorrectly (no recursive merge)
+        return user_settings
+
+    settings = default_settings.copy()
+    settings.update(user_settings)
+    return settings
