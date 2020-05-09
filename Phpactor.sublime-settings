@@ -20,6 +20,9 @@
         },
         "copy_absolute_path": {
             "enabled": true
+        },
+        "copy_relative_path": {
+            "enabled": true
         }
     },
     "tab_context_menu_settings": {

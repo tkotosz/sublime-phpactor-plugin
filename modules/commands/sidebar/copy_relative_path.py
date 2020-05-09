@@ -10,4 +10,4 @@ class PhpactorSidebarCopyRelativePathCommand(sublime_plugin.WindowCommand):
         sublime.set_clipboard(file_relative_path)
 
     def is_visible(self, files):
-        return len(files) == 1 and get_sidebar_menu_setting('copy_absolute_path', 'enabled', False)
+        return len(files) == 1 and get_sidebar_menu_setting('copy_relative_path', 'enabled', False)
