@@ -93,3 +93,21 @@ where filesystem can be "git" or "composer".
 
 2. The goto implementation command requires indexing so if you would like to use that command then don't forget to start the phpactor indexer like this:
 `bin/phpactor index:build --watch --working-dir=/absolute/path/to/your/project/dir`
+
+## Auto-Completion
+
+For auto-completion you can use the RPC command or you can use the Language Server implementation. Since the Language Server implementation provides way better integration then using the RPC auto-completion command I recommend to configure the Language Server.
+1. Install the Sublime LSP Plugin: https://github.com/sublimelsp/LSP
+2. Configure it to use Phpactor: https://phpactor.readthedocs.io/en/develop/lsp/sublime.html
+
+On the other hand if you would like to use the RPC-based completion then it can be turned on in `Preferences > Package Settings > Phpactor > Settings - User`:
+```
+{
+    "command_settings": {
+        "complete": {
+            "enabled": true
+        }
+    }
+}
+```
+Note that it can offer auto-completion, but not always handled perfectly by this Plugin and I am not planning to spend to much time making any better since I will use LSP for this.
