@@ -1,5 +1,7 @@
 # sublime-phpactor-plugin
 
+Sublime integration to communicate with [Phpactor](https://phpactor.readthedocs.io/en/develop/index.html) through its [RPC](https://phpactor.readthedocs.io/en/develop/other/rpc.html#rpc-protocol) protocol.
+
 ## General information
 
 Available commands in the command palette (CTRL+P):
